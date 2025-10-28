@@ -1,6 +1,5 @@
 <?php
 
-// database/migrations/xxxx_xx_xx_xxxxxx_create_evidences_table.php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,11 +10,18 @@ return new class extends Migration
     {
         Schema::create('evidences', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Relasi ke tabel users
+            // 💡 PERBAIKAN: Gunakan kolom biasa (foreignId) dulu tanpa constraint.
+            $table->foreignId('user_id'); 
+            
             $table->string('lokasi');
             $table->text('deskripsi')->nullable();
-            $table->string('file_path'); // Path untuk menyimpan file
+            
+            // 💡 PERBAIKAN: Mengubah tipe data kolom file_path ke TEXT
+            $table->text('file_path'); 
+            
             $table->timestamps();
+            
+            // 💡 CATATAN: foreign key akan ditambahkan di migrasi terpisah jika diperlukan
         });
     }
 

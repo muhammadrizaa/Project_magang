@@ -10,10 +10,17 @@ class Evidence extends Model
 {
     use HasFactory;
 
+    /**
+     * Nama tabel di database.
+     */
     protected $table = 'evidences';
 
+    /**
+     * Kolom yang dapat diisi secara massal (mass assignable).
+     */
     protected $fillable = [
         'user_id',
+        'project_id',
         'lokasi',
         'deskripsi',
         'file_path',
@@ -22,13 +29,18 @@ class Evidence extends Model
     ];
 
     /**
-     * The attributes that should be cast to native types.
-     * Ini adalah bagian paling penting untuk masalah 'file 0'.
+     * Cast kolom tertentu ke tipe data native.
+     * Penting agar file_path yang disimpan dalam format JSON di database
+     * bisa otomatis dikonversi menjadi array ketika diambil.
      */
     protected $casts = [
         'file_path' => 'array',
     ];
 
+    /**
+     * Relasi ke tabel users.
+     * Setiap evidence dimiliki oleh satu user.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

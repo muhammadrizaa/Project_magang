@@ -1,5 +1,6 @@
 <x-admin-layout>
     <style>
+        /* [Gaya CSS Umum dan Tabel] */
         .card { background-color: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
         .card-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb; }
         .card-title h2 { font-size: 1.25rem; font-weight: 600; color: #1f2937; }
@@ -21,16 +22,86 @@
         .btn-red:hover { background-color: #b91c1c; }
         .btn-gray { background-color: #6b7280; }
         .btn-gray:hover { background-color: #4b5563; }
+        .btn-blue { background-color: #3b82f6; } 
+        .btn-blue:hover { background-color: #2563eb; } 
         .btn-secondary { background-color: #e5e7eb; color: #1f2937; }
         .btn-secondary:hover { background-color: #d1d5db; }
-        .pagination { margin-top: 16px; }
+        
+        /* [Gaya CSS Pagination] */
+        .pagination { 
+            margin-top: 24px; 
+            display: flex; 
+            justify-content: flex-end; 
+            align-items: center;
+            gap: 8px;
+        }
+        .pagination > div:not(nav):first-child { 
+            display: none !important; 
+        }
+        .pagination nav { 
+            display: flex;
+            gap: 8px; 
+            align-items: center;
+        }
+        .pagination nav a, 
+        .pagination nav span {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid #d1d5db;
+            white-space: nowrap;
+        }
+        .pagination nav a {
+            color: #1f2937;
+            background-color: #f9fafb; 
+        }
+        .pagination nav a:hover {
+            background-color: #e5e7eb;
+            border-color: #9ca3af;
+        }
+        .pagination nav > div > a, 
+        .pagination nav > div > span {
+            background-color: #dc2626 !important;
+            color: white !important;
+            border-color: #dc2626 !important;
+        }
+        .pagination nav > div > a:hover {
+            background-color: #b91c1c !important;
+        }
+        .pagination nav > div > span {
+            background-color: #fca5a5 !important;
+            border-color: #fca5a5 !important;
+            cursor: not-allowed;
+        }
+        .pagination nav span[aria-current="page"] {
+            background-color: #3b82f6 !important; 
+            color: white !important; 
+            border-color: #3b82f6 !important;
+            cursor: default;
+        }
+        .pagination nav svg {
+            display: none !important; 
+        }
+
+        /* Gaya Modal Khusus untuk Foto */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
-        .modal-content { background-color: #fff; padding: 24px; border-radius: 8px; max-width: 500px; width: 100%; }
-        .modal-file-list a { display: block; padding: 8px; border-radius: 6px; text-decoration: none; color: #2563eb; }
-        .modal-file-list a:hover { background-color: #f3f4f6; }
+        /* 💡 PERUBAHAN: Max width diperluas agar foto terlihat lebih baik */
+        .modal-content { background-color: #fff; padding: 24px; border-radius: 8px; max-width: 800px; width: 95%; height: 90%; display: flex; flex-direction: column; }
+        .modal-content-body { overflow-y: auto; padding: 0 10px; flex-grow: 1; }
+        .image-preview-item { margin-bottom: 25px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; }
+        .image-preview-item img { max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .image-caption { text-align: center; margin-top: 10px; font-style: italic; color: #4b5563; font-size: 0.9rem; }
     </style>
 
-    <div class="card" x-data="{ modalOpen: false, rejectModalOpen: false, evidenceFiles: [], rejectAction: '' }">
+    <div class="card" x-data="{ 
+        modalOpen: false, 
+        rejectModalOpen: false, 
+        evidenceFiles: [], 
+        rejectAction: '' 
+    }">
         <div class="card-header">
             <div class="card-title">
                 <h2>Kelola Evidence</h2>
@@ -66,8 +137,10 @@
                         </td>
                         <td style="text-align: center; white-space: nowrap;">
                             
-                            <button @click="modalOpen = true; evidenceFiles = @json($evidence->file_path ?? [])" class="btn btn-gray">
-                                Lihat ({{ is_array($evidence->file_path) ? count($evidence->file_path) : 0 }})
+                            <button 
+                                @click="modalOpen = true; evidenceFiles = @js($evidence->files ?? ($evidence->file_path ?? []))" 
+                                class="btn btn-blue">
+                                Lihat ({{ count($evidence->files ?? ($evidence->file_path ?? [])) }})
                             </button>
                             
                             @if($evidence->status == 'pending')
@@ -82,7 +155,7 @@
 
                             <form action="{{ route('admin.evidence.destroy', $evidence) }}" method="POST" style="display: inline; margin-left: 8px;" onsubmit="return confirm('Yakin ingin MENGHAPUS PERMANEN evidence ini?');">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-gray">Hapus</button>
+                                <button type="submit" class="btn btn-red">Hapus</button>
                             </form>
                         </td>
                     </tr>
@@ -92,26 +165,33 @@
                 </tbody>
             </table>
         </div>
+        
         <div class="pagination">{{ $evidences->links() }}</div>
 
-        {{-- Modal untuk Lihat File --}}
+        {{-- 💡 MODAL UNTUK PREVIEW FOTO --}}
         <div x-show="modalOpen" class="modal-overlay" style="display: none;">
             <div class="modal-content" @click.away="modalOpen = false">
-                <h3 class="card-header" style="margin-bottom: 16px; padding-bottom: 12px;">Detail File Evidence</h3>
-                <div class="modal-file-list">
+                <h3 class="card-header" style="margin-bottom: 16px; padding-bottom: 12px;">Detail File Evidence ({{ count($evidence->files ?? ($evidence->file_path ?? [])) }} Foto)</h3>
+                
+                {{-- Kontainer Isi Modal yang bisa discroll --}}
+                <div class="modal-content-body">
                     <template x-if="evidenceFiles && evidenceFiles.length > 0">
                         <template x-for="(fileData, index) in evidenceFiles" :key="index">
-                            <a :href="'/storage/' + (typeof fileData === 'string' ? fileData : fileData.path)" target="_blank">
-                                <i class="fa-solid fa-file-arrow-down" style="margin-right: 8px;"></i>
-                                <span x-text="typeof fileData === 'string' ? 'File ' + (index + 1) : (fileData.caption || 'File ' + (index + 1))"></span>
-                            </a>
+                            <div class="image-preview-item">
+                                {{-- Menghitung URL file --}}
+                                <img :src="'{{ asset('storage') }}/' + (fileData.file_path || fileData.path || fileData)" alt="Evidence Photo" loading="lazy">
+                                
+                                {{-- Menampilkan Caption/Nama File --}}
+                                <p class="image-caption" x-text="fileData.caption || (typeof fileData === 'string' ? 'Foto ' + (index + 1) : (fileData.file_path || fileData.path))"></p>
+                            </div>
                         </template>
                     </template>
                     <template x-if="!evidenceFiles || evidenceFiles.length === 0">
                         <p>Tidak ada file untuk ditampilkan.</p>
                     </template>
                 </div>
-                 <div style="text-align: right; margin-top: 20px;">
+                
+                <div style="text-align: right; margin-top: 20px; padding-top: 10px; border-top: 1px solid #e5e7eb;">
                     <button @click="modalOpen = false" class="btn btn-red">Tutup</button>
                 </div>
             </div>

@@ -1,11 +1,12 @@
 <x-karyawan-layout>
     <head>
-        {{-- Pastikan Anda sudah memuat file CSS dan JS Dropzone di layout utama Anda --}}
+        {{-- Memuat file CSS dan JS Dropzone --}}
         <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
         <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
     </head>
 
     <style>
+        /* Gaya umum */
         .card { background-color: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .card-header { font-size: 1.25rem; font-weight: 600; color: #1f2937; border-bottom: 1px solid #e5e7eb; padding-bottom: 16px; margin-bottom: 24px; }
         .form-group { margin-bottom: 1.5rem; }
@@ -64,6 +65,7 @@
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Pastikan Dropzone tidak auto-discover dua kali jika ada di layout
             if (document.querySelector("#evidence-dropzone").dropzone) {
                 Dropzone.forElement("#evidence-dropzone").destroy();
             }
@@ -81,10 +83,11 @@
             let myDropzone = new Dropzone("#evidence-dropzone", { 
                 url: "{{ route('karyawan.evidence.store') }}",
                 paramName: "file",
-                autoProcessQueue: false,
-                uploadMultiple: true,
+                autoProcessQueue: false, // Penting! Kita proses secara manual
+                uploadMultiple: true,    // Penting! Untuk upload banyak file sekaligus
                 parallelUploads: 10,
-                maxFiles: 10,
+                // 💡 PERUBAHAN UTAMA: Hapus atau set ke null untuk menghilangkan batasan file
+                maxFiles: null, 
                 acceptedFiles: 'image/*',
                 addRemoveLinks: false,
                 previewTemplate: previewTemplate,
@@ -95,6 +98,55 @@
                     const submitButton = document.querySelector("#submit-button");
                     const notificationArea = document.querySelector("#notification-area");
 
+                    // Variabel untuk menyimpan nama folder dari drag & drop
+                    let folderName = null; 
+
+                    // --- 💡 LOGIKA DETEKSI FOLDER DROP (Dipertahankan) ---
+                    const dropzoneElement = document.getElementById('evidence-dropzone');
+
+                    dropzoneElement.addEventListener('drop', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        // Reset nama folder setiap kali ada drop
+                        folderName = null; 
+
+                        if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+                            const item = e.dataTransfer.items[0];
+                            if (item.webkitGetAsEntry) { 
+                                const entry = item.webkitGetAsEntry();
+                                
+                                if (entry && entry.isDirectory) {
+                                    folderName = entry.name;
+                                }
+                            }
+                        }
+                    });
+                    
+                    // ---------------------------------------------------
+
+                    // 💡 LOGIKA UTAMA: MENGISI CAPTION
+                    this.on("addedfile", function(file) {
+                        let captionInput = file.previewElement.querySelector('.caption-input');
+                        
+                        if (captionInput) {
+                            let fileName = file.name;
+                            let baseName = fileName.replace(/\.[^/.]+$/, ""); 
+                            
+                            let finalCaption = baseName;
+
+                            // Jika nama folder terdeteksi, gunakan format NAMA_FOLDER(NAMA_FILE)
+                            if (folderName) {
+                                finalCaption = `${folderName}(${baseName})`;
+                            }
+
+                            captionInput.value = finalCaption;
+                        }
+                    });
+                    // ----------------------------------------------------------------------
+
+
+                    // 1. Tombol Submit diklik
                     submitButton.addEventListener("click", function(e) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -115,22 +167,28 @@
                         }
                     });
 
+                    // 2. Saat Dropzone akan mengirim data
                     this.on("sendingmultiple", function(files, xhr, formData) {
+                        // Menambahkan data form biasa
                         formData.append("_token", form.querySelector('input[name="_token"]').value);
                         formData.append("lokasi", form.querySelector('#lokasi').value);
                         formData.append("deskripsi", form.querySelector('#deskripsi').value);
 
-                        document.querySelectorAll('.dz-preview .caption-input').forEach(input => {
-                            formData.append("caption[]", input.value);
+                        // Mengambil data caption dari input
+                        files.forEach(function(file) {
+                            let captionInput = file.previewElement.querySelector('.caption-input');
+                            formData.append("caption[]", captionInput ? captionInput.value : '');
                         });
                         
                         notificationArea.style.display = 'none';
                     });
 
+                    // 3. Sukses Upload
                     this.on("successmultiple", function(files, response) {
                         notificationArea.innerHTML = `<div class="alert alert-success">Evidence berhasil di-upload!</div>`;
                         notificationArea.style.display = 'block';
 
+                        // Bersihkan form
                         form.querySelector('#lokasi').value = '';
                         form.querySelector('#deskripsi').value = '';
                         self.removeAllFiles(true);
@@ -143,6 +201,7 @@
                         }, 3000);
                     });
 
+                    // 4. Gagal Upload
                     this.on("errormultiple", function(files, response) {
                         let errorMessage = "Terjadi kesalahan:\n";
                         if (response.errors) {

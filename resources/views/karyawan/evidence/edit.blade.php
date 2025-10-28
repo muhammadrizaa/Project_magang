@@ -11,7 +11,34 @@
         .btn-red:hover { background-color: #b91c1c; }
         .btn-secondary { background-color: #e5e7eb; color: #1f2937; }
         .btn-secondary:hover { background-color: #d1d5db; }
-        .file-list-current a { display: inline-block; margin-right: 10px; margin-bottom: 5px; color: #2563eb; font-size: 0.9rem; }
+        
+        /* 🔥 GAYA BARU UNTUK TOMBOL BIRU (File Evidence) 🔥 */
+        .btn-blue-link {
+            display: inline-flex; 
+            align-items: center; 
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            font-weight: 500; 
+            font-size: 0.8rem; 
+            text-decoration: none; 
+            color: white; 
+            background-color: #3b82f6; /* Warna biru */
+            border: none; 
+            cursor: pointer; 
+            transition: background-color 0.2s;
+            margin-right: 10px; 
+            margin-bottom: 5px;
+        }
+        .btn-blue-link:hover {
+            background-color: #2563eb; 
+        }
+
+        /* Container untuk file list */
+        .file-list-current {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 5px; /* Jarak dari label */
+        }
     </style>
 
     <div class="card">
@@ -31,15 +58,18 @@
             <div class="form-group">
                 <label>File Evidence Saat Ini</label>
                 <div class="file-list-current">
-                    {{-- Kode ini sekarang aman karena mengecek jika file_path adalah array --}}
+                    
                     @if(is_array($evidence->file_path))
                         @foreach($evidence->file_path as $index => $fileData)
                             @php
-                                // Menangani format lama (string) dan baru (array of object)
-                                $path = is_string($fileData) ? $fileData : ($fileData['path'] ?? null);
+                                // Mengambil path dari format JSON array of objects yang sudah di-cast
+                                $path = $fileData['path'] ?? null; 
                             @endphp
                             @if($path)
-                                <a href="{{ Storage::url($path) }}" target="_blank">File {{ $index + 1 }}</a>
+                                {{-- 🔥 MENGGUNAKAN BUTTON BIRU BARU 🔥 --}}
+                                <a href="{{ Storage::url($path) }}" target="_blank" class="btn-blue-link">
+                                    File {{ $index + 1 }}
+                                </a>
                             @endif
                         @endforeach
                     @else
@@ -50,7 +80,8 @@
 
             <div class="form-group">
                 <label for="file">Upload File Baru (Opsional)</label>
-                <input type="file" id="file" name="file">
+                {{-- Menambahkan array [] dan multiple agar bisa upload banyak file jika dibutuhkan di Controller --}}
+                <input type="file" id="file" name="file[]" multiple> 
                 <small style="color: #6b7280;">Catatan: Mengupload file baru akan menghapus semua file lama dan status akan kembali "pending".</small>
             </div>
             <div class="form-footer">

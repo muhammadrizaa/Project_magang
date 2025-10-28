@@ -26,8 +26,9 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
+        // UBAH VALIDASI DARI 'email' MENJADI 'username'
         return [
-            'username' => ['required', 'string'],
+            'username' => ['required', 'string'], 
             'password' => ['required', 'string'],
         ];
     }
@@ -41,7 +42,14 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('username', 'password'), $this->boolean('remember'))) {
+        // BUAT ARRAY CREDENTIALS DENGAN 'username'
+        $credentials = [
+            'username' => $this->string('username'), // Menggunakan input 'username'
+            'password' => $this->string('password'),
+        ];
+        
+        // COBA AUTENTIKASI MENGGUNAKAN 'username'
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -76,10 +84,11 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the rate limiting throttle key for the request.
+     * Get the throttle key for the request.
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->input('username')).'|'.$this->ip());
+        // RATE LIMITER JUGA MENGGUNAKAN 'username'
+        return Str::transliterate(Str::lower($this->string('username')).'|'.$this->ip());
     }
 }

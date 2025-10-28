@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Database\Seeders\UserSeeder; // <-- INI YANG KURANG
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,7 +12,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            UserSeeder::class,
+            // Panggil seeder users jika ada
+            // UserSeeder::class, 
+            
+            // Panggil seeder AdminUserSeeder yang baru kita buat
+            AdminUserSeeder::class, 
         ]);
     }
 }

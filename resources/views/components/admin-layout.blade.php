@@ -13,7 +13,6 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
     
-    <!-- SCRIPT ALPINE.JS (INI YANG PALING PENTING) -->
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
     
     <style>
@@ -59,12 +58,58 @@
     <div class="content">
         <div class="topbar">
             <div class="welcome">Selamat Datang Admin, di Website PT Telkom Akses Banjarmasin</div>
-            <div class="date">{{ now()->translatedFormat('d F Y H:i') }}</div>
+            
+            {{-- 💡 Perubahan: Beri ID pada elemen waktu --}}
+            <div class="date" id="current-time"></div> 
         </div>
 
         {{ $slot }}
     </div>
 
     @stack('scripts')
+
+    {{-- 💡 SCRIPT BARU: Realtime Clock --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const timeElement = document.getElementById('current-time');
+
+            function updateTime() {
+                const now = new Date();
+                
+                // Opsi untuk format tanggal dan waktu
+                const options = { 
+                    day: '2-digit', month: 'long', year: 'numeric', 
+                    hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                    hour12: false // Menggunakan format 24 jam
+                };
+
+                // Menggunakan Intl.DateTimeFormat untuk format lokal (Indonesia)
+                const formatter = new Intl.DateTimeFormat('id-ID', options);
+                
+                // Ambil tanggal dan waktu yang sudah diformat
+                const formattedTime = formatter.format(now);
+                
+                // Pisahkan tanggal dan waktu untuk tampilan yang lebih rapi
+                const parts = formattedTime.split(' ');
+                
+                // Biasanya format default Intl.DateTimeFormat 'id-ID' adalah dd/mm/yyyy hh:mm:ss
+                // Kita akan coba format ulang secara manual: "DD Bulan YYYY HH:mm:ss"
+
+                // Jika formatnya sudah sesuai keinginan (misal: 20 Oktober 2025 16:31:43)
+                // Kita gunakan saja output dari formatter. Jika tidak, bisa dipecah:
+                
+                const day = now.getDate().toString().padStart(2, '0');
+                const month = now.toLocaleDateString('id-ID', { month: 'long' });
+                const year = now.getFullYear();
+                const time = now.toLocaleTimeString('id-ID', { hour12: false });
+                
+                timeElement.textContent = `${day} ${month} ${year} ${time}`;
+            }
+
+            // Panggil fungsi sekali segera, lalu set interval
+            updateTime(); 
+            setInterval(updateTime, 1000); 
+        });
+    </script>
 </body>
 </html>
