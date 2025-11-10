@@ -155,7 +155,7 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" placeholder="Masukkan password" required>
             </div>
-            </button><button type="submit" class="btn-login">🚀 Login</button>
+            </button><button type="submit" class="btn-login">🚀Login</button>
         </form>
         <p class="note">© {{ date('Y') }} PT Telkom Akses Banjarmasin</p>
     </div>

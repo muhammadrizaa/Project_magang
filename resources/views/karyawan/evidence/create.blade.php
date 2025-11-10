@@ -6,12 +6,14 @@
     </head>
 
     <style>
-        /* Gaya umum */
+        /* Gaya umum (Tailwind like utilities) */
         .card { background-color: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .card-header { font-size: 1.25rem; font-weight: 600; color: #1f2937; border-bottom: 1px solid #e5e7eb; padding-bottom: 16px; margin-bottom: 24px; }
         .form-group { margin-bottom: 1.5rem; }
         .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151; }
-        .form-group input, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; }
+        .form-group input, .form-group textarea, .form-group select { 
+            width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; 
+        }
         .btn-submit { display: block; width: 100%; padding: 0.875rem; border: none; border-radius: 8px; background-color: #dc2626; color: white; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
         .btn-submit:disabled { background-color: #fca5a5; cursor: not-allowed; }
         .alert { padding: 1rem; border-radius: 8px; font-weight: 500; margin-bottom: 1.5rem; }
@@ -50,6 +52,44 @@
                 <label for="deskripsi">Deskripsi Umum (Opsional)</label>
                 <textarea id="deskripsi" name="deskripsi" rows="3" placeholder="Deskripsi umum atau catatan tambahan..."></textarea>
             </div>
+            
+            {{-- START: DROPDOWN MASTER DATA (SEMUA WAJIB) --}}
+            
+            {{-- Pangwas (WAJIB) --}}
+            <div class="form-group">
+                <label for="pangwas_id">Pilih Pengawas (Pangwas)</label>
+                <select id="pangwas_id" name="pangwas_id" class="form-group select" required>
+                    <option value="">-- Pilih Pengawas --</option>
+                    @foreach ($pangwas_list as $pangwas)
+                        <option value="{{ $pangwas->id }}">{{ $pangwas->nama_pangwas }}</option>
+                    @endforeach
+                </select>
+            </div>
+            
+            {{-- Tematik (Wajib) --}}
+            <div class="form-group">
+                <label for="tematik_id">Pilih Tematik</label>
+                <select id="tematik_id" name="tematik_id" class="form-group select" required>
+                    <option value="">-- Pilih Tematik --</option>
+                    @foreach ($tematik_list as $tematik)
+                        <option value="{{ $tematik->id }}">{{ $tematik->nama_tematik }}</option>
+                    @endforeach
+                </select>
+            </div>
+            
+            {{-- Purchase Order (PO) (Wajib) --}}
+            <div class="form-group">
+                <label for="po_id">Nomor Purchase Order (PO)</label>
+                <select id="po_id" name="po_id" class="form-group select" required>
+                    <option value="">-- Pilih Nomor PO --</option>
+                    @foreach ($po_list as $po)
+                        <option value="{{ $po->id }}">{{ $po->no_po }}</option>
+                    @endforeach
+                </select>
+            </div>
+            
+            {{-- END: DROPDOWN MASTER DATA --}}
+
 
             <div class="form-group">
                 <label>File Evidence</label>
@@ -65,7 +105,7 @@
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Pastikan Dropzone tidak auto-discover dua kali jika ada di layout
+            
             if (document.querySelector("#evidence-dropzone").dropzone) {
                 Dropzone.forElement("#evidence-dropzone").destroy();
             }
@@ -83,10 +123,9 @@
             let myDropzone = new Dropzone("#evidence-dropzone", { 
                 url: "{{ route('karyawan.evidence.store') }}",
                 paramName: "file",
-                autoProcessQueue: false, // Penting! Kita proses secara manual
-                uploadMultiple: true,    // Penting! Untuk upload banyak file sekaligus
+                autoProcessQueue: false,
+                uploadMultiple: true,
                 parallelUploads: 10,
-                // 💡 PERUBAHAN UTAMA: Hapus atau set ke null untuk menghilangkan batasan file
                 maxFiles: null, 
                 acceptedFiles: 'image/*',
                 addRemoveLinks: false,
@@ -97,18 +136,15 @@
                     const form = document.querySelector("#evidence-form");
                     const submitButton = document.querySelector("#submit-button");
                     const notificationArea = document.querySelector("#notification-area");
-
-                    // Variabel untuk menyimpan nama folder dari drag & drop
+                    
                     let folderName = null; 
 
-                    // --- 💡 LOGIKA DETEKSI FOLDER DROP (Dipertahankan) ---
+                    // --- LOGIKA DETEKSI FOLDER DROP ---
                     const dropzoneElement = document.getElementById('evidence-dropzone');
 
                     dropzoneElement.addEventListener('drop', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
-
-                        // Reset nama folder setiap kali ada drop
                         folderName = null; 
 
                         if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
@@ -123,19 +159,15 @@
                         }
                     });
                     
-                    // ---------------------------------------------------
-
-                    // 💡 LOGIKA UTAMA: MENGISI CAPTION
+                    // --- LOGIKA UTAMA: MENGISI CAPTION ---
                     this.on("addedfile", function(file) {
                         let captionInput = file.previewElement.querySelector('.caption-input');
                         
                         if (captionInput) {
                             let fileName = file.name;
                             let baseName = fileName.replace(/\.[^/.]+$/, ""); 
-                            
                             let finalCaption = baseName;
 
-                            // Jika nama folder terdeteksi, gunakan format NAMA_FOLDER(NAMA_FILE)
                             if (folderName) {
                                 finalCaption = `${folderName}(${baseName})`;
                             }
@@ -143,20 +175,24 @@
                             captionInput.value = finalCaption;
                         }
                     });
-                    // ----------------------------------------------------------------------
-
-
+                    
                     // 1. Tombol Submit diklik
                     submitButton.addEventListener("click", function(e) {
                         e.preventDefault();
                         e.stopPropagation();
 
-                        if (document.querySelector("#lokasi").value.trim() === "") {
-                            notificationArea.innerHTML = `<div class="alert alert-danger">Lokasi wajib diisi!</div>`;
+                        // --- 💡 VALIDASI DROPDOWN BARU (Semua Wajib) ---
+                        if (document.querySelector("#lokasi").value.trim() === "" ||
+                            document.querySelector("#pangwas_id").value === "" ||
+                            document.querySelector("#tematik_id").value === "" ||
+                            document.querySelector("#po_id").value === "") {
+                            
+                            notificationArea.innerHTML = `<div class="alert alert-danger">Lokasi, Pengawas, Tematik, dan Nomor PO wajib diisi!</div>`;
                             notificationArea.style.display = 'block';
                             return;
                         }
-
+                        // --- AKHIR VALIDASI DROPDOWN ---
+                        
                         if (self.getQueuedFiles().length > 0) {
                             submitButton.disabled = true;
                             submitButton.innerText = 'Mengupload...';
@@ -173,6 +209,12 @@
                         formData.append("_token", form.querySelector('input[name="_token"]').value);
                         formData.append("lokasi", form.querySelector('#lokasi').value);
                         formData.append("deskripsi", form.querySelector('#deskripsi').value);
+                        
+                        // --- 💡 TAMBAHKAN DATA DROPDOWN BARU KE FORMDATA ---
+                        formData.append("pangwas_id", form.querySelector('#pangwas_id').value);
+                        formData.append("tematik_id", form.querySelector('#tematik_id').value);
+                        formData.append("po_id", form.querySelector('#po_id').value);
+                        // ----------------------------------------------------
 
                         // Mengambil data caption dari input
                         files.forEach(function(file) {
@@ -185,20 +227,28 @@
 
                     // 3. Sukses Upload
                     this.on("successmultiple", function(files, response) {
-                        notificationArea.innerHTML = `<div class="alert alert-success">Evidence berhasil di-upload!</div>`;
-                        notificationArea.style.display = 'block';
+                        // Dropzone hanya mengembalikan status, kita perlu redirect jika berhasil
+                        if (response.redirect) {
+                            window.location.href = response.redirect;
+                        } else {
+                            // Jika tidak ada redirect (tergantung implementasi controller)
+                            notificationArea.innerHTML = `<div class="alert alert-success">Evidence berhasil di-upload!</div>`;
+                            notificationArea.style.display = 'block';
+                            
+                            form.querySelector('#lokasi').value = '';
+                            form.querySelector('#deskripsi').value = '';
+                            form.querySelector('#pangwas_id').selectedIndex = 0;
+                            form.querySelector('#tematik_id').selectedIndex = 0;
+                            form.querySelector('#po_id').selectedIndex = 0;
+                            self.removeAllFiles(true);
 
-                        // Bersihkan form
-                        form.querySelector('#lokasi').value = '';
-                        form.querySelector('#deskripsi').value = '';
-                        self.removeAllFiles(true);
+                            submitButton.disabled = false;
+                            submitButton.innerText = 'Upload Evidence';
 
-                        submitButton.disabled = false;
-                        submitButton.innerText = 'Upload Evidence';
-
-                        setTimeout(() => {
-                            notificationArea.style.display = 'none';
-                        }, 3000);
+                            setTimeout(() => {
+                                notificationArea.style.display = 'none';
+                            }, 3000);
+                        }
                     });
 
                     // 4. Gagal Upload
@@ -209,7 +259,7 @@
                                 errorMessage += `- ${response.errors[field].join(', ')}\n`;
                             }
                         } else {
-                            errorMessage = response.message || "Gagal mengupload file. Ukuran file mungkin terlalu besar.";
+                            errorMessage = response.message || "Gagal mengupload file. Ukuran file mungkin terlalu besar atau format salah.";
                         }
                         
                         notificationArea.innerHTML = `<div class="alert alert-danger">${errorMessage.replace(/\n/g, '<br>')}</div>`;

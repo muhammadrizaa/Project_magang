@@ -22,75 +22,90 @@
         .btn-lihat:hover { background-color: #2563eb; } 
         .btn-gray { background-color: #6b7280; }
         .btn-gray:hover { background-color: #4b5563; }
-        .pagination { margin-top: 16px; }
-
-        /* 💡 PERUBAHAN GAYA MODAL (Grid Responsif) */
-        .modal-overlay { 
-            position: fixed; 
-            top: 0; left: 0; right: 0; bottom: 0; 
-            background-color: rgba(0, 0, 0, 0.7); 
+        
+        /* 🔥 PENGATURAN PAGINATION TERAKHIR */
+        .pagination { 
+            margin-top: 16px; 
             display: flex; 
-            align-items: flex-start; 
-            justify-content: center; 
-            z-index: 50; 
-            overflow-y: auto; 
-            padding: 20px 0; 
+            justify-content: flex-end; 
+            align-items: center; 
         }
-        .modal-content { 
-            background-color: #fff; 
-            padding: 24px; 
-            border-radius: 8px; 
-            max-width: 1200px; 
-            width: 95%; 
-            display: flex; 
-            flex-direction: column; 
-            margin-top: 50px; 
-            margin-bottom: 50px;
+        .pagination > div:not(nav):first-child {
+            display: none !important;
         }
-        .modal-content-body { 
-            /* Logika Grid yang Responsif: Kolom dibuat sebanyak mungkin, min lebar 300px, mengisi ruang yang ada. */
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 20px; 
-            padding: 0; 
-            flex-grow: 1; 
-            margin-top: 20px;
-        }
-        @media (min-width: 1024px) {
-            .modal-content-body {
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            }
-        }
-        .image-preview-item { 
-            margin-bottom: 0; 
-            border: 1px solid #e5e7eb; 
-            border-radius: 8px; 
-            padding: 15px; 
+        .pagination nav {
             display: flex;
-            flex-direction: column;
+            gap: 4px;
             align-items: center;
         }
+        .pagination nav a, 
+        .pagination nav span {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid #d1d5db;
+            white-space: nowrap;
+            color: #1f2937;
+            background-color: #f9fafb; 
+        }
+        .pagination nav a:hover {
+            background-color: #e5e7eb;
+            border-color: #9ca3af;
+        }
+        .pagination nav span[aria-current="page"] {
+            background-color: #3b82f6 !important; 
+            color: white !important; 
+            border-color: #3b82f6 !important;
+            cursor: default;
+        }
+        .pagination nav svg {
+            display: none !important;
+        }
+        .pagination nav a[rel="prev"]:before {
+            content: "« Sebelumnya";
+            display: inline-block;
+        }
+        .pagination nav a[rel="next"]:after {
+            content: "Selanjutnya »";
+            display: inline-block;
+        }
+        
+        /* 🔥 MODAL */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background-color: rgba(0, 0, 0, 0.6); 
+            display: flex; align-items: center; justify-content: center; 
+            z-index: 50; overflow-y: hidden; padding: 20px 0; 
+        }
+        .modal-content { 
+            background-color: #fff; padding: 24px; border-radius: 8px; max-width: 95%; max-height: 95%; width: 95%; height: 95%; 
+            display: flex; flex-direction: column;
+        }
+        .modal-header-clean {
+            display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; margin-bottom: 15px; border-bottom: 2px solid #3b82f6; 
+        }
+        .modal-header-clean h3 { font-size: 1.5rem; font-weight: 700; color: #1f2937; }
+        .modal-content-body { 
+            overflow: hidden; flex-grow: 1; padding: 0 10px; display: flex; align-items: stretch; justify-content: space-around; gap: 15px; 
+        }
+        .image-preview-item { 
+            flex: 1 1 0; min-width: 100px; max-width: 350px; background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; padding: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); height: 100%; box-sizing: border-box;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .image-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding-bottom: 10px; }
         .image-preview-item img { 
-            max-width: 100%; 
-            height: auto; 
-            max-height: 400px; 
-            object-fit: contain; 
-            display: block; 
-            margin-bottom: 10px; 
-            border-radius: 6px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            max-width: 100%; height: auto; max-height: 65vh; display: block; margin: 0 auto; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); object-fit: contain;
         }
         .image-caption { 
-            text-align: center; 
-            margin-top: 10px; 
-            font-style: italic; 
-            color: #4b5563; 
-            font-size: 0.9rem;
-            word-break: break-word; 
+            text-align: center; margin-top: 5px; font-style: normal; color: #374151; font-size: 0.875rem; font-weight: 600; padding-top: 8px;
+            border-top: 1px dashed #e5e7eb; flex-shrink: 0; width: 100%;
         }
     </style>
 
-    <div class="card" x-data="{ modalOpen: false, evidenceFiles: [] }">
+    <div class="card" x-data="{ modalOpen: false, evidenceFiles: [], evidenceId: null, evidenceLocation: '' }">
         <h2 class="card-header">Riwayat Evidence Anda</h2>
         
         @if(session('success'))
@@ -103,35 +118,46 @@
             <table class="styled-table">
                 <thead>
                     <tr>
-                        <th>Lokasi</th>
-                        <th>File Evidence</th>
-                        <th style="text-align: center;">Status</th>
-                        <th style="text-align: center;">Aksi</th>
+                        <th style="width: 15%;">Waktu/Lokasi</th>
+                        <th style="width: 15%;">Nomor PO</th>
+                        <th style="width: 15%;">Tematik</th>
+                        <th style="width: 15%;">Pengawas</th>
+                        <th style="width: 10%;">Foto</th>
+                        <th style="width: 15%; text-align: center;">Status</th>
+                        <th style="width: 15%; text-align: center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($evidences as $evidence)
                     @php
-                        // Memastikan data file bisa diakses dan didecode dengan benar
-                        $files = is_string($evidence->file_path) 
-                            ? (json_decode($evidence->file_path, true) ?? [])
-                            : ($evidence->file_path ?? ($evidence->files ?? [])); 
-                        
-                        // Menggunakan json_encode untuk Alpine.js
+                        // Memastikan data file bisa diakses dan didecode dengan benar (Dari Model Casting)
+                        $files = $evidence->file_path ?? []; 
                         $filesJson = json_encode($files);
                     @endphp
                     <tr>
                         <td>
                             <div style="font-weight: 600; color: #1f2937;">{{ $evidence->lokasi }}</div>
-                            <div style="font-size: 0.8rem; color: #6b7280;">{{ $evidence->created_at->format('d M Y') }}</div>
+                            <div style="font-size: 0.8rem; color: #6b7280;">{{ $evidence->created_at->format('d M Y H:i') }}</div>
+                        </td>
+                        <td>
+                            {{-- PO (Purchase Order) --}}
+                            <div style="font-weight: 600;">{{ $evidence->po->no_po ?? 'N/A' }}</div>
+                        </td>
+                        <td>
+                            {{-- Tematik --}}
+                            <div style="font-weight: 500; color: #3b82f6;">{{ $evidence->tematik->nama_tematik ?? 'N/A' }}</div>
+                        </td>
+                        <td>
+                            {{-- Pangwas --}}
+                            <div style="font-weight: 500;">{{ $evidence->pangwas->nama_pangwas ?? 'N/A' }}</div>
                         </td>
                         <td>
                             {{-- Button yang memicu Modal --}}
                             <button 
-                                @click="modalOpen = true; evidenceFiles = {{ $filesJson }}" 
+                                @click="modalOpen = true; evidenceFiles = {{ $filesJson }}; evidenceId = {{ $evidence->id }}; evidenceLocation = '{{ $evidence->lokasi }}';" 
                                 class="btn btn-lihat">
                                 <i class="fa-solid fa-folder-open" style="margin-right: 6px;"></i> 
-                                Lihat ({{ count($files) }}) Foto
+                                Lihat ({{ count($files) }})
                             </button>
                         </td>
                         <td style="text-align: center;">
@@ -140,8 +166,8 @@
                             </span>
                             @if($evidence->status == 'rejected')
                                 {{-- Catatan admin hanya ditampilkan jika rejected --}}
-                                <p style="font-size: 0.75rem; color: #b91c1c; margin-top: 4px; max-width: 200px; margin-left:auto; margin-right:auto;">
-                                    Catatan: {{ $evidence->catatan_admin }}
+                                <p title="{{ $evidence->catatan_admin }}" style="font-size: 0.75rem; color: #b91c1c; margin-top: 4px; max-width: 120px; margin-left:auto; margin-right:auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: help;">
+                                    Catatan: **{{ Str::limit($evidence->catatan_admin, 15) }}**
                                 </p>
                             @endif
                         </td>
@@ -160,31 +186,42 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" style="text-align: center; padding: 16px;">Anda belum memiliki riwayat evidence.</td>
+                        <td colspan="7" style="text-align: center; padding: 16px;">Anda belum memiliki riwayat evidence.</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
+        {{-- 🔥 Ini adalah elemen Pagination yang benar-benar ditampilkan di bawah tabel --}}
         <div class="pagination">
             {{ $evidences->links() }}
         </div>
 
-        {{-- 💡 MODAL UNTUK PREVIEW FOTO (Tampilan Grid Sudah Optimal) --}}
+        {{-- MODAL UNTUK PREVIEW FOTO --}}
         <div x-show="modalOpen" class="modal-overlay" style="display: none;">
             <div class="modal-content" @click.away="modalOpen = false">
-                <h3 class="card-header" style="margin-bottom: 0; padding-bottom: 12px;">Detail File Evidence (<span x-text="evidenceFiles.length"></span> Foto)</h3>
+                
+                {{-- 🔥 HEADER YANG DIRAPIKAN --}}
+                <div class="modal-header-clean">
+                    <h3 x-text="'Detail Evidence: ' + evidenceLocation">Detail Evidence</h3>
+                    <div style="font-size: 1rem; color: #6b7280;">
+                        Total <span x-text="evidenceFiles.length">0</span> Foto
+                    </div>
+                </div>
                 
                 <div class="modal-content-body">
                     <template x-if="evidenceFiles && evidenceFiles.length > 0">
                         <template x-for="(fileData, index) in evidenceFiles" :key="index">
                             <div class="image-preview-item">
-                                {{-- Menghitung URL file --}}
-                                <img :src="'{{ asset('storage') }}/' + (fileData.file_path || fileData.path || fileData)" alt="Evidence Photo" loading="lazy">
+                                <div class="image-container">
+                                    {{-- Menghitung URL file --}}
+                                    {{-- Menggunakan asset('storage') dan memastikan path diambil dari object fileData --}}
+                                    <img :src="'{{ asset('storage') }}/' + (fileData.path)" alt="Evidence Photo" loading="lazy">
+                                </div>
                                 
                                 {{-- Menampilkan Caption/Nama File --}}
-                                <p class="image-caption" x-text="fileData.caption || (typeof fileData === 'string' ? 'Foto ' + (index + 1) : (fileData.caption || fileData.file_path || fileData.path))"></p>
+                                <p class="image-caption" x-text="'Foto ' + (index + 1) + ': ' + (fileData.caption || 'Tanpa Keterangan')"></p>
                             </div>
                         </template>
                     </template>
