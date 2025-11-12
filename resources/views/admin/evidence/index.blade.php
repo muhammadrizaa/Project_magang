@@ -96,7 +96,7 @@
                         <th style="width: 15%;">Karyawan</th>
                         <th style="width: 10%;">No. PO</th>
                         <th style="width: 10%;">Tematik</th>
-                        <th style="width: 10%;">Pangwas</th>
+                        <th style="width: 10%;">Waspang</th>
                         <th style="width: 15%;">Lokasi/Tanggal</th>
                         <th style="width: 10%;">Detail Foto</th>
                         <th style="width: 10%; text-align: center;">Status</th>

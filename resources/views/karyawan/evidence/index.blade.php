@@ -121,7 +121,7 @@
                         <th style="width: 15%;">Waktu/Lokasi</th>
                         <th style="width: 15%;">Nomor PO</th>
                         <th style="width: 15%;">Tematik</th>
-                        <th style="width: 15%;">Pengawas</th>
+                        <th style="width: 15%;">Waspang</th>
                         <th style="width: 10%;">Foto</th>
                         <th style="width: 15%; text-align: center;">Status</th>
                         <th style="width: 15%; text-align: center;">Aksi</th>

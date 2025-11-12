@@ -76,14 +76,14 @@
     </style>
     
     <div class="container" style="max-width: 1000px; margin: 0 auto; padding: 20px;">
-        <h1 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem;">Kelola Data Pangwas</h1>
+        <h1 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem;">Kelola Data Waspang</h1>
 
         {{-- Tempatkan notifikasi di sini --}}
 
         <!-- Tombol Tambah Pangwas (Menggunakan CSS Murni) -->
         <div style="margin-bottom: 1.5rem; display: flex; justify-content: flex-end;">
             <a href="{{ route('admin.pangwas.create') }}" class="btn-add">
-                <i class="fa-solid fa-plus" style="margin-right: 0.5rem;"></i> Tambah Pangwas Baru
+                <i class="fa-solid fa-plus" style="margin-right: 0.5rem;"></i> Tambah Waspang Baru
             </a>
         </div>
 
@@ -93,7 +93,7 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>Nama Pangwas</th>
+                        <th>Nama Waspang</th>
                         <th>Dibuat Pada</th>
                         <th style="text-align: center;">Aksi</th>
                     </tr>
@@ -129,7 +129,7 @@
                     @empty
                         <tr>
                             <td colspan="4" style="text-align: center; padding: 40px; color: #6b7280;">
-                                Data Pangwas masih kosong. Silakan tambahkan Pangwas baru.
+                                Data Pangwas masih kosong. Silakan tambahkan Waspang baru.
                             </td>
                         </tr>
                     @endforelse

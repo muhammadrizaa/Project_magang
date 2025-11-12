@@ -57,9 +57,9 @@
             
             {{-- Pangwas (WAJIB) --}}
             <div class="form-group">
-                <label for="pangwas_id">Pilih Pengawas (Pangwas)</label>
+                <label for="pangwas_id">Pilih Waspang (Waspang)</label>
                 <select id="pangwas_id" name="pangwas_id" class="form-group select" required>
-                    <option value="">-- Pilih Pengawas --</option>
+                    <option value="">-- Pilih Waspang --</option>
                     @foreach ($pangwas_list as $pangwas)
                         <option value="{{ $pangwas->id }}">{{ $pangwas->nama_pangwas }}</option>
                     @endforeach
@@ -123,9 +123,9 @@
             let myDropzone = new Dropzone("#evidence-dropzone", { 
                 url: "{{ route('karyawan.evidence.store') }}",
                 paramName: "file",
-                autoProcessQueue: false,
+                autoProcessQueue: true,
                 uploadMultiple: true,
-                parallelUploads: 10,
+                parallelUploads: 100,
                 maxFiles: null, 
                 acceptedFiles: 'image/*',
                 addRemoveLinks: false,
