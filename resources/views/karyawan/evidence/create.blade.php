@@ -123,7 +123,7 @@
             let myDropzone = new Dropzone("#evidence-dropzone", { 
                 url: "{{ route('karyawan.evidence.store') }}",
                 paramName: "file",
-                autoProcessQueue: true,
+                autoProcessQueue: false,
                 uploadMultiple: true,
                 parallelUploads: 100,
                 maxFiles: null, 

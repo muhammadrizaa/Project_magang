@@ -1,35 +1,34 @@
-<x-admin-layout>
-    {{-- Ganti 'x-admin-layout' jika nama komponen layout Anda berbeda --}}
-    
+@php
+    $layout = auth()->user()->role === 'karyawan' 
+        ? 'karyawan-layout' 
+        : 'admin-layout';
+@endphp
+
+<x-dynamic-component :component="$layout">
+
     <style>
-        /* CSS Umum */
-        /* PERUBAHAN LEBAR: Container utama diperlebar secara signifikan */
         .container-wrapper { 
-            max-width: 1400px; /* Lebar Maksimal Ditingkatkan */
-            width: 95%; /* Menggunakan persentase untuk layar yang sangat lebar */
+            max-width: 1400px;
+            width: 95%;
             margin: 0 auto; 
             padding: 20px; 
         } 
         .page-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
 
-        /* Struktur 2 Kolom (Flexbox) */
         .card-container { display: flex; gap: 20px; }
         .card { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 30px; }
         .card-title { font-size: 1.25rem; font-weight: 600; color: #1f2937; margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; }
         
-        /* Form Styling */
         .form-group { margin-bottom: 1rem; }
         .form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 0.25rem; }
         .form-input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; transition: border-color 0.2s; }
         .form-input:focus { border-color: #dc2626; outline: none; box-shadow: 0 0 0 1px #dc2626; }
         .form-error { color: red; font-size: 0.8rem; margin-top: 4px; }
         
-        /* Tombol */
         .btn-submit { background-color: #dc2626; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; margin-top: 1rem; }
         .btn-submit:hover { background-color: #b91c1c; }
         .alert-success { color: #065f46; background-color: #d1fae5; border: 1px solid #10b981; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
 
-        /* Media Query untuk Mobile */
         @media (max-width: 768px) {
             .card-container { flex-direction: column; }
         }
@@ -116,4 +115,5 @@
             
         </div>
     </div>
-</x-admin-layout>
+
+</x-dynamic-component>
