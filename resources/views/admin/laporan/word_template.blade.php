@@ -4,18 +4,17 @@
     <meta charset="UTF-8">
     <title>Laporan Evidence</title>
     <style>
-        @page {
-            margin: 40px;
-        }
         body { 
             font-family: Arial, sans-serif; 
             font-size: 11pt; 
-            margin: 0;
-            padding: 0;
+            margin: 40px;
         }
         .header { 
             width: 100%; 
             margin-bottom: 15px;
+        }
+        .header table {
+            width: 100%;
             border-collapse: collapse;
         }
         .header td { 
@@ -70,24 +69,26 @@
 <body>
 @foreach($evidences as $index => $evidenceData)
     {{-- Header muncul di setiap halaman --}}
-    <table class="header">
-        <tr>
-            <td style="width: 50%; text-align: left;">
-                @if($logoAksesBase64)
-                    <img src="{{ $logoAksesBase64 }}" alt="Logo Akses" style="height: 50px;">
-                @endif
-            </td>
-            <td style="width: 50%; text-align: right;">
-                @if($logoIndonesiaBase64)
-                    <img src="{{ $logoIndonesiaBase64 }}" alt="Logo Indonesia" style="height: 60px;">
-                @endif
-            </td>
-        </tr>
-    </table>
+    <div class="header">
+        <table>
+            <tr>
+                <td style="width: 50%; text-align: left;">
+                    @if($logoAksesBase64)
+                        <img src="{{ $logoAksesBase64 }}" alt="Logo Akses" style="height: 50px;">
+                    @endif
+                </td>
+                <td style="width: 50%; text-align: right;">
+                    @if($logoIndonesiaBase64)
+                        <img src="{{ $logoIndonesiaBase64 }}" alt="Logo Indonesia" style="height: 60px;">
+                    @endif
+                </td>
+            </tr>
+        </table>
+    </div>
 
     <div class="title">EVIDENCE PEKERJAAN</div>
 
-    {{-- Info project - tampil di semua halaman untuk testing --}}
+    {{-- Info project tampil di semua halaman --}}
     <table class="info">
         <tr>
             <td>PROYEK</td>

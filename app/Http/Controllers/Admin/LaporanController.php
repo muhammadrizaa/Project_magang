@@ -100,48 +100,106 @@ class LaporanController extends Controller
         $phpWord->setDefaultFontName('Arial');
         $phpWord->setDefaultFontSize(11);
 
-        foreach ($evidences as $index => $evidence) {
-            $section = $phpWord->addSection();
+        foreach ($evidences as $evidence) {
+            $filesData = $this->normalizeFilesData($evidence->file_path);
+            
+            // Batasi 6 foto per halaman
+            $imageChunks = array_chunk($filesData, 6);
 
-            // Header Logo
-            $header = $section->addHeader();
-            $table = $header->addTable(['width' => 100 * 50, 'unit' => 'pct']);
-            $table->addRow();
-            if (file_exists(public_path('images/logo-kiri.png'))) {
-                $table->addCell(4500)->addImage(public_path('images/logo-kiri.png'), ['width' => 120]);
-            }
-            if (file_exists(public_path('images/logo-kanan.png'))) {
-                $table->addCell(4500)->addImage(public_path('images/logo-kanan.png'), ['width' => 100, 'alignment' => Jc::END]);
-            }
+            foreach ($imageChunks as $chunkIndex => $pageImages) {
+                $section = $phpWord->addSection([
+                    'marginTop' => 1000,
+                    'marginBottom' => 1000,
+                    'marginLeft' => 1000,
+                    'marginRight' => 1000
+                ]);
 
-            $section->addTextBreak(1);
-            $section->addText('EVIDENCE PEKERJAAN', ['bold' => true, 'size' => 14, 'underline' => 'single'], ['alignment' => Jc::CENTER, 'spaceAfter' => 300]);
+                // Header Logo - di setiap halaman
+                $header = $section->addHeader();
+                $headerTable = $header->addTable(['alignment' => Jc::CENTER]);
+                $headerTable->addRow();
+                
+                // Logo kiri
+                $cellLeft = $headerTable->addCell(4500);
+                if (file_exists(public_path('images/logo-kiri.png'))) {
+                    $cellLeft->addImage(public_path('images/logo-kiri.png'), [
+                        'width' => 120,
+                        'height' => 50
+                    ]);
+                }
+                
+                // Logo kanan
+                $cellRight = $headerTable->addCell(4500);
+                if (file_exists(public_path('images/logo-kanan.png'))) {
+                    $cellRight->addImage(public_path('images/logo-kanan.png'), [
+                        'width' => 100,
+                        'height' => 60,
+                        'alignment' => Jc::END
+                    ]);
+                }
 
-            // Info Project
-            $info = [
-                'PROYEK'   => "PENGADAAN PEKERJAAN OUTSIDE PLANT FIBER TO THE HOME (OSP - FTTH)\nTAHUN 2025 TELKOM REGIONAL IV KALIMANTAN",
-                'KONTRAK'  => '',
-                'AREA'     => 'BANJARMASIN',
-                'LOKASI'   => $evidence->lokasi ?? '-',
-                'PELAKSANA'=> 'PT. TELKOM AKSES'
-            ];
+                // Title
+                $section->addTextBreak(1);
+                $section->addText(
+                    'EVIDENCE PEKERJAAN',
+                    ['bold' => true, 'size' => 14, 'underline' => 'single'],
+                    ['alignment' => Jc::CENTER, 'spaceAfter' => 240]
+                );
 
-            $infoTable = $section->addTable();
-            foreach ($info as $label => $value) {
+                // Info Project - pakai TABEL tanpa border
+                $infoTableStyle = [
+                    'borderSize' => 0,
+                    'borderColor' => 'FFFFFF',
+                    'cellMargin' => 0,
+                    'alignment' => Jc::START
+                ];
+                
+                $cellStyle = [
+                    'borderSize' => 0,
+                    'borderColor' => 'FFFFFF',
+                    'valign' => 'top'
+                ];
+                
+                $infoTable = $section->addTable($infoTableStyle);
+                
+                // PROYEK
                 $infoTable->addRow();
-                $infoTable->addCell(2000)->addText($label, ['bold' => true]);
-                $infoTable->addCell(500)->addText(':');
-                $infoTable->addCell(7000)->addText($value);
-            }
+                $infoTable->addCell(1800, $cellStyle)->addText('PROYEK', ['bold' => true, 'size' => 11]);
+                $infoTable->addCell(200, $cellStyle)->addText(':', ['size' => 11]);
+                $cell = $infoTable->addCell(7000, $cellStyle);
+                $cell->addText('PENGADAAN PEKERJAAN OUTSIDE PLANT FIBER TO THE HOME (OSP - FTTH)', ['size' => 11]);
+                $cell->addText('TAHUN 2025 TELKOM REGIONAL IV KALIMANTAN', ['size' => 11]);
+                
+                // KONTRAK
+                $infoTable->addRow();
+                $infoTable->addCell(1800, $cellStyle)->addText('KONTRAK', ['bold' => true, 'size' => 11]);
+                $infoTable->addCell(200, $cellStyle)->addText(':', ['size' => 11]);
+                $infoTable->addCell(7000, $cellStyle)->addText('', ['size' => 11]);
+                
+                // AREA
+                $infoTable->addRow();
+                $infoTable->addCell(1800, $cellStyle)->addText('AREA', ['bold' => true, 'size' => 11]);
+                $infoTable->addCell(200, $cellStyle)->addText(':', ['size' => 11]);
+                $infoTable->addCell(7000, $cellStyle)->addText('BANJARMASIN', ['size' => 11]);
+                
+                // LOKASI
+                $infoTable->addRow();
+                $infoTable->addCell(1800, $cellStyle)->addText('LOKASI', ['bold' => true, 'size' => 11]);
+                $infoTable->addCell(200, $cellStyle)->addText(':', ['size' => 11]);
+                $infoTable->addCell(7000, $cellStyle)->addText($evidence->lokasi ?? '-', ['size' => 11]);
+                
+                // PELAKSANA
+                $infoTable->addRow();
+                $infoTable->addCell(1800, $cellStyle)->addText('PELAKSANA', ['bold' => true, 'size' => 11]);
+                $infoTable->addCell(200, $cellStyle)->addText(':', ['size' => 11]);
+                $infoTable->addCell(7000, $cellStyle)->addText('PT. TELKOM AKSES', ['size' => 11]);
 
-            $section->addTextBreak(1);
+                $section->addTextBreak(1);
 
-            // Evidence Images
-            if (is_array($evidence->file_path)) {
-                $filesData = $this->normalizeFilesData($evidence->file_path);
-                $imageChunks = array_chunk($filesData, 3);
-
-                foreach ($imageChunks as $chunk) {
+                // Tabel Gambar - maksimal 6 foto (3 kolom x 2 baris)
+                $imageRows = array_chunk($pageImages, 3);
+                
+                foreach ($imageRows as $row) {
                     $imageTable = $section->addTable([
                         'borderSize' => 6,
                         'borderColor' => '000000',
@@ -149,38 +207,42 @@ class LaporanController extends Controller
                         'alignment' => Jc::CENTER
                     ]);
 
-                    $imageTable->addRow();
-                    foreach ($chunk as $fileData) {
-                        $cell = $imageTable->addCell(3000);
-                        // === PERUBAHAN DI SINI ===
-                        // Menggunakan storage_path() untuk mendapatkan path file dari folder storage
+                    // Row gambar
+                    $imageTable->addRow(2000);
+                    foreach ($row as $fileData) {
+                        $cell = $imageTable->addCell(3000, ['valign' => 'center']);
                         $safePath = ltrim($fileData['path'], '/');
                         $fullPath = storage_path('app/public/' . $safePath);
 
                         if (file_exists($fullPath)) {
                             $cell->addImage($fullPath, [
                                 'width' => 150,
+                                'height' => 150,
                                 'alignment' => Jc::CENTER
                             ]);
                         }
                     }
-
-                    for ($i = count($chunk); $i < 3; $i++) {
+                    
+                    // Isi cell kosong
+                    for ($i = count($row); $i < 3; $i++) {
                         $imageTable->addCell(3000);
                     }
 
+                    // Row caption
                     $imageTable->addRow();
-                    foreach ($chunk as $fileData) {
-                        $imageTable->addCell(3000)->addText($fileData['caption'], ['size' => 9], ['alignment' => Jc::CENTER]);
+                    foreach ($row as $fileData) {
+                        $imageTable->addCell(3000, ['valign' => 'center'])->addText(
+                            $fileData['caption'] ?? '',
+                            ['size' => 9],
+                            ['alignment' => Jc::CENTER]
+                        );
                     }
-                    for ($i = count($chunk); $i < 3; $i++) {
+                    
+                    // Isi cell caption kosong
+                    for ($i = count($row); $i < 3; $i++) {
                         $imageTable->addCell(3000);
                     }
                 }
-            }
-
-            if ($index < count($evidences) - 1) {
-                $section->addPageBreak();
             }
         }
 
@@ -207,7 +269,8 @@ class LaporanController extends Controller
             ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('images/logo-kanan.png')))
             : null;
 
-        // Normalisasi file evidence menjadi Base64
+        // Normalisasi file evidence menjadi Base64 DAN pecah per 6 foto
+        $processedEvidences = [];
         foreach ($evidences as $evidence) {
             $normalizedFiles = [];
             if (is_array($evidence->file_path)) {
@@ -215,8 +278,6 @@ class LaporanController extends Controller
                     $path = is_array($file) ? $file['path'] : $file;
                     $caption = is_array($file) && isset($file['caption']) ? $file['caption'] : '';
 
-                    // === PERUBAHAN DI SINI ===
-                    // Menggunakan storage_path() untuk mendapatkan path file dari folder storage
                     $safePath = ltrim($path, '/');
                     $fullPath = storage_path('app/public/' . $safePath);
 
@@ -229,11 +290,29 @@ class LaporanController extends Controller
                     }
                 }
             }
-            $evidence->file_path = $normalizedFiles;
+
+            // Pecah menjadi page (maksimal 6 foto per page)
+            if (count($normalizedFiles) > 0) {
+                $pages = array_chunk($normalizedFiles, 6);
+                foreach ($pages as $pageIndex => $pageFiles) {
+                    $processedEvidences[] = [
+                        'lokasi' => $evidence->lokasi,
+                        'file_path' => $pageFiles,
+                        'is_first_page' => ($pageIndex === 0) ? true : false // Untuk info project
+                    ];
+                }
+            } else {
+                // Jika tidak ada gambar, tetap tampilkan info
+                $processedEvidences[] = [
+                    'lokasi' => $evidence->lokasi,
+                    'file_path' => [],
+                    'is_first_page' => true
+                ];
+            }
         }
 
         $data = [
-            'evidences' => $evidences,
+            'evidences' => $processedEvidences,
             'logoAksesBase64' => $logoAksesBase64,
             'logoIndonesiaBase64' => $logoIndonesiaBase64
         ];
