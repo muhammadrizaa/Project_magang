@@ -14,17 +14,19 @@ class PurchaseOrderController extends Controller
      * Menampilkan daftar semua Purchase Order.
      */
     public function index()
-    {
-        // 1. Menggunakan withCount untuk menghitung jumlah evidence yang APPROVED
-        $po_list = PurchaseOrder::withCount([
-                                         'evidence as approved_count' => function ($query) {
-                                             $query->where('status', 'approved');
-                                         }])
-                             ->orderBy('no_po', 'asc') // Mengurutkan berdasarkan nomor PO ASC
-                             ->paginate(10);
-        
-        return view('admin.po.index', compact('po_list'));
-    }
+{
+    // EAGER LOAD SEMUA RELASI YANG DIPERLUKAN di view, termasuk 'evidences'
+    $po_list = PurchaseOrder::with([
+        'evidences', 
+        'evidences.user', 
+        'evidences.tematik', 
+        'evidences.pangwas'
+    ])
+    // Tambahkan withCount atau select raw untuk approved_count jika diperlukan di tempat lain
+    ->paginate(10);
+
+    return view('admin.po.index', compact('po_list'));
+}
 
     /**
      * Menampilkan formulir untuk membuat Purchase Order baru.

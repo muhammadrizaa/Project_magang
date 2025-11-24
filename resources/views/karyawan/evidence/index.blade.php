@@ -40,17 +40,18 @@
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.6);
             display: flex; align-items: center; justify-content: center; z-index: 50; overflow-y: auto; padding: 20px; }
         .modal-content { background-color: #fff; padding: 24px; border-radius: 8px;
-            max-width: 95%; width: 95%; max-height: 95%; display: flex; flex-direction: column; overflow-y: auto; }
+            max-width: 95%; width: 95%; max-height: 90vh; display: flex; flex-direction: column; }
         .modal-header-clean { display: flex; justify-content: space-between; align-items: center;
             padding-bottom: 15px; margin-bottom: 15px; border-bottom: 2px solid #3b82f6; }
         .modal-header-clean h3 { font-size: 1.5rem; font-weight: 700; color: #1f2937; }
 
-        /* === GRID FOTO (6 PER BARIS) === */
+        /* === GRID FOTO === */
         .modal-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             gap: 16px;
             overflow-y: auto;
+            max-height: calc(90vh - 200px);
             padding: 10px 5px;
         }
         .image-preview-item {
@@ -70,12 +71,18 @@
             object-fit: cover;
             border-radius: 6px;
             margin-bottom: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .image-preview-item img:hover {
+            transform: scale(1.05);
         }
         .image-caption {
             font-size: 0.8rem;
             color: #374151;
             text-align: center;
             font-weight: 600;
+            word-break: break-word;
         }
     </style>
 
@@ -83,8 +90,39 @@
         <h2 class="card-header">Riwayat Evidence Anda</h2>
 
         @if(session('success'))
-            <div class="alert-success">{{ session('success') }}</div>
+            <div class="alert-success" id="success-alert">{{ session('success') }}</div>
+            <script>
+                // Hilangkan notifikasi setelah 10 detik
+                setTimeout(() => {
+                    const alert = document.getElementById('success-alert');
+                    if (alert) {
+                        alert.style.display = 'none';
+                    }
+                }, 10000);
+            </script>
         @endif
+        
+        {{-- 🔥 CEK PESAN DARI LOCALSTORAGE (untuk AJAX redirect) --}}
+        <script>
+            const successMessage = localStorage.getItem('successMessage');
+            if (successMessage) {
+                const alertDiv = document.createElement('div');
+                alertDiv.id = 'success-alert-ajax';
+                alertDiv.className = 'alert-success';
+                alertDiv.textContent = successMessage;
+                
+                const cardHeader = document.querySelector('.card-header');
+                cardHeader.insertAdjacentElement('afterend', alertDiv);
+                
+                // Hapus dari localStorage
+                localStorage.removeItem('successMessage');
+                
+                // Hilangkan setelah 10 detik
+                setTimeout(() => {
+                    alertDiv.style.display = 'none';
+                }, 10000);
+            }
+        </script>
 
         <div class="table-wrapper">
             <table class="styled-table">
@@ -102,8 +140,9 @@
                 <tbody>
                     @forelse ($evidences as $evidence)
                         @php
-                            $files = $evidence->file_path ?? [];
-                            $filesJson = json_encode($files);
+                            $files = is_array($evidence->file_path) ? $evidence->file_path : [];
+                            // Escape JSON dengan benar untuk Alpine.js
+                            $filesJson = htmlspecialchars(json_encode($files), ENT_QUOTES, 'UTF-8');
                         @endphp
                         <tr>
                             <td>
@@ -114,15 +153,25 @@
                             <td style="color: #3b82f6;">{{ $evidence->tematik->nama_tematik ?? 'N/A' }}</td>
                             <td>{{ $evidence->pangwas->nama_pangwas ?? 'N/A' }}</td>
                             <td>
-                                <button @click="modalOpen = true; evidenceFiles = {{ $filesJson }}; evidenceLocation = '{{ $evidence->lokasi }}';" 
+                                <button 
+                                    onclick="openModal{{ $evidence->id }}()" 
                                     class="btn btn-lihat">
                                     <i class="fa-solid fa-folder-open mr-1"></i> Lihat ({{ count($files) }})
                                 </button>
+                                <script>
+                                    function openModal{{ $evidence->id }}() {
+                                        const data = {!! json_encode($files) !!};
+                                        const component = document.querySelector('[x-data]').__x.$data;
+                                        component.evidenceFiles = data;
+                                        component.evidenceLocation = '{{ addslashes($evidence->lokasi) }}';
+                                        component.modalOpen = true;
+                                    }
+                                </script>
                             </td>
                             <td style="text-align:center;">
                                 <span class="badge badge-{{ $evidence->status }}">{{ $evidence->status }}</span>
-                                @if($evidence->status == 'rejected')
-                                    <p title="{{ $evidence->catatan_admin }}" style="font-size: 0.75rem; color: #b91c1c;">
+                                @if($evidence->status == 'rejected' && $evidence->catatan_admin)
+                                    <p title="{{ $evidence->catatan_admin }}" style="font-size: 0.75rem; color: #b91c1c; margin-top: 4px;">
                                         Catatan: {{ Str::limit($evidence->catatan_admin, 20) }}
                                     </p>
                                 @endif
@@ -150,25 +199,25 @@
         <div class="pagination">{{ $evidences->links() }}</div>
 
         <!-- MODAL -->
-        <div x-show="modalOpen" class="modal-overlay">
+        <div x-show="modalOpen" class="modal-overlay" x-cloak style="display: none;">
             <div class="modal-content" @click.away="modalOpen = false">
                 <div class="modal-header-clean">
                     <h3 x-text="'Detail Evidence: ' + evidenceLocation"></h3>
-                    <span style="font-size:0.9rem; color:#6b7280;">Total <span x-text="evidenceFiles.length"></span> Foto</span>
+                    <span style="font-size:0.9rem; color:#6b7280;">
+                        Total <strong x-text="evidenceFiles.length"></strong> Foto
+                    </span>
                 </div>
 
                 <!-- 🔥 GALERI FOTO DALAM GRID -->
                 <div class="modal-gallery">
-                    <template x-if="evidenceFiles && evidenceFiles.length > 0">
-                        <template x-for="(file, index) in evidenceFiles" :key="index">
-                            <div class="image-preview-item">
-                                <img :src="'{{ asset('storage') }}/' + (file.path)" alt="">
-                                <p class="image-caption" x-text="'Foto ' + (index + 1) + ': ' + (file.caption || 'Tanpa Keterangan')"></p>
-                            </div>
-                        </template>
-                    </template>
-                    <template x-if="!evidenceFiles || evidenceFiles.length === 0">
-                        <p>Tidak ada file untuk ditampilkan.</p>
+                    <template x-for="(file, index) in evidenceFiles" :key="index">
+                        <div class="image-preview-item">
+                            <img 
+                                :src="'{{ asset('storage') }}/' + file.path" 
+                                :alt="'Foto ' + (index + 1)"
+                                @click="window.open('{{ asset('storage') }}/' + file.path, '_blank')">
+                            <p class="image-caption" x-text="file.caption || ('Foto ' + (index + 1))"></p>
+                        </div>
                     </template>
                 </div>
 
@@ -178,4 +227,8 @@
             </div>
         </div>
     </div>
+
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
 </x-karyawan-layout>

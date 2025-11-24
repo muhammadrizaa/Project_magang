@@ -58,7 +58,7 @@ class EvidenceController extends Controller
             'lokasi' => ['required', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string'],
             'file' => ['required', 'array', 'min:1'],
-            'file.*' => ['image', 'mimes:jpeg,jpg,png', 'max:2048'],
+            'file.*' => ['image', 'mimes:jpeg,jpg,png'], // 🔥 HAPUS LIMIT SIZE DULU
             'caption' => ['nullable', 'array'],
             'caption.*' => ['nullable', 'string', 'max:255'],
             
@@ -80,11 +80,17 @@ class EvidenceController extends Controller
             // Proses upload semua file
             if ($request->hasFile('file')) {
                 foreach ($request->file('file') as $index => $file) {
-                    $path = $file->store('evidences/'.$id_project, 'public');
+                    // Simpan dengan nama file asli
+                    $originalName = $file->getClientOriginalName();
+                    $path = $file->storeAs(
+                        'evidences/'.$id_project, 
+                        $originalName, 
+                        'public'
+                    );
                     
                     $fileData[] = [
                         'path' => $path,
-                        'caption' => $captions[$index] ?? $request->lokasi
+                        'caption' => $captions[$index] ?? $originalName // Gunakan nama file asli kalau tidak ada caption
                     ];
                 }
             }
@@ -108,8 +114,9 @@ class EvidenceController extends Controller
             // PENTING: Mengembalikan JSON response untuk Dropzone
             return response()->json([
                 'success' => true, 
-                'message' => 'Evidence berhasil di-upload.',
-                'redirect' => route('karyawan.evidence.index') 
+                'message' => 'Evidence berhasil di-upload! Total ' . count($fileData) . ' foto telah disimpan.',
+                'redirect' => route('karyawan.evidence.index'),
+                'total_files' => count($fileData)
             ], 200);
 
         } catch (\Exception $e) {
@@ -141,6 +148,7 @@ class EvidenceController extends Controller
 
     /**
      * Memperbarui data evidence di database.
+     * 🔥 UPDATED: Support delete individual files + upload new files
      */
     public function update(Request $request, Evidence $evidence)
     {
@@ -148,44 +156,107 @@ class EvidenceController extends Controller
             abort(403, 'AKSES DITOLAK.');
         }
 
+        // Validasi
         $request->validate([
             'lokasi' => ['required', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string'],
-            'captions' => ['nullable', 'array'],
-            'captions.*' => ['nullable', 'string', 'max:255'],
-            'files' => ['nullable', 'array'],
-            'files.*' => ['image', 'mimes:jpeg,jpg,png', 'max:2048'],
-            'deleted_files' => ['nullable', 'array'],
+            'file' => ['nullable', 'array'],  // File baru dari Dropzone (opsional)
+            'file.*' => ['image', 'mimes:jpeg,jpg,png', 'max:2048'],
+            'deleted_files' => ['nullable', 'string'], // JSON string dari frontend
             
-            // --- VALIDASI ID MASTER BARU (WAJIB) ---
+            // Master data (wajib)
             'pangwas_id' => ['required', 'integer', 'exists:pangwas,id'],
             'tematik_id' => ['required', 'integer', 'exists:tematik,id'],
             'po_id' => ['required', 'integer', 'exists:purchase_order,id'],
-            // -----------------------------------------
         ]);
 
-        $files = $evidence->file_path;
+        try {
+            $fileData = $evidence->file_path ?? []; // Ambil file lama
 
-        // Logika file management (penghapusan, update caption, penambahan file baru)
-        // ... (Ini adalah bagian yang Anda asumsikan sudah diimplementasikan di update form Anda) ...
-        // Karena kode file management (delete/add files) di update() sangat kompleks,
-        // saya tidak memasukkannya secara lengkap di sini. Anda harus memastikan
-        // logika tersebut bekerja dengan benar berdasarkan kode lama Anda.
+            // 1. PROSES PENGHAPUSAN FILE LAMA
+            if ($request->filled('deleted_files')) {
+                $deletedIndexes = json_decode($request->deleted_files, true);
+                
+                if (is_array($deletedIndexes) && count($deletedIndexes) > 0) {
+                    foreach ($deletedIndexes as $index) {
+                        // Hapus file dari storage
+                        if (isset($fileData[$index]['path'])) {
+                            Storage::disk('public')->delete($fileData[$index]['path']);
+                        }
+                        
+                        // Tandai untuk dihapus dari array
+                        unset($fileData[$index]);
+                    }
+                    
+                    // Re-index array (hilangkan gap index)
+                    $fileData = array_values($fileData);
+                }
+            }
 
-        $evidence->update([
-            'lokasi' => $request->lokasi,
-            'deskripsi' => $request->deskripsi,
-            'file_path' => array_values($files),
-            'status' => 'pending', 
-            
-            // --- SIMPAN ID MASTER BARU ---
-            'pangwas_id' => $request->pangwas_id,
-            'tematik_id' => $request->tematik_id,
-            'po_id' => $request->po_id,
-            // --------------------------------
-        ]);
+            // 2. PROSES UPLOAD FILE BARU
+            if ($request->hasFile('file')) {
+                $filePaths = $request->input('file_paths', []); // Ambil custom path dari frontend
+                
+                foreach ($request->file('file') as $index => $file) {
+                    // Gunakan path dari frontend (termasuk folder) atau fallback ke nama file asli
+                    $customPath = $filePaths[$index] ?? $file->getClientOriginalName();
+                    
+                    // Pisahkan folder dan filename
+                    $pathInfo = pathinfo($customPath);
+                    $directory = isset($pathInfo['dirname']) && $pathInfo['dirname'] !== '.' 
+                        ? $pathInfo['dirname'] 
+                        : '';
+                    $filename = $pathInfo['basename'];
+                    
+                    // Tentukan path penyimpanan
+                    $storagePath = 'evidences/' . $evidence->project_id;
+                    if (!empty($directory)) {
+                        $storagePath .= '/' . $directory;
+                    }
+                    
+                    // Simpan file dengan struktur folder yang dipertahankan
+                    $path = $file->storeAs($storagePath, $filename, 'public');
+                    
+                    $fileData[] = [
+                        'path' => $path,
+                        'caption' => $customPath // Simpan path lengkap sebagai caption
+                    ];
+                }
+            }
 
-        return redirect()->route('karyawan.evidence.index')->with('success', 'Evidence berhasil diperbarui.');
+            // 3. UPDATE EVIDENCE
+            $evidence->update([
+                'lokasi' => $request->lokasi,
+                'deskripsi' => $request->deskripsi,
+                'file_path' => $fileData,
+                'status' => 'pending', // Reset status jadi pending lagi
+                
+                // Update master data
+                'pangwas_id' => $request->pangwas_id,
+                'tematik_id' => $request->tematik_id,
+                'po_id' => $request->po_id,
+            ]);
+
+            // Cek apakah request dari AJAX/Dropzone
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Evidence berhasil diperbarui! Total ' . count($fileData) . ' foto.',
+                    'redirect' => route('karyawan.evidence.index')
+                ], 200);
+            }
+
+            // Redirect dengan flash message
+            return redirect()
+                ->route('karyawan.evidence.index')
+                ->with('success', 'Evidence berhasil diperbarui! Total ' . count($fileData) . ' foto.');
+                
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Gagal memperbarui evidence: ' . $e->getMessage());
+        }
     }
 
     /**

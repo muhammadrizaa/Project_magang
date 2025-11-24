@@ -94,7 +94,7 @@
             <div class="form-group">
                 <label>File Evidence</label>
                 <div id="evidence-dropzone" class="dropzone">
-                    <div class="dz-message" data-dz-message><span>Seret foto ke sini atau klik untuk memilih</span></div>
+                    <div class="dz-message" data-dz-message><span>Seret foto/folder ke sini atau klik untuk memilih | Tanpa batasan ukuran & jumlah</span></div>
                 </div>
             </div>
 
@@ -126,7 +126,8 @@
                 autoProcessQueue: false,
                 uploadMultiple: true,
                 parallelUploads: 100,
-                maxFiles: null, 
+                maxFiles: null, // 🔥 UNLIMITED FILES
+                maxFilesize: null, // 🔥 UNLIMITED SIZE
                 acceptedFiles: 'image/*',
                 addRemoveLinks: false,
                 previewTemplate: previewTemplate,
@@ -168,8 +169,13 @@
                             let baseName = fileName.replace(/\.[^/.]+$/, ""); 
                             let finalCaption = baseName;
 
-                            if (folderName) {
-                                finalCaption = `${folderName}(${baseName})`;
+                            // Jika ada folder path dari browser
+                            if (file.fullPath) {
+                                finalCaption = file.fullPath;
+                            } else if (file.webkitRelativePath) {
+                                finalCaption = file.webkitRelativePath;
+                            } else if (folderName) {
+                                finalCaption = `${folderName}/${baseName}`;
                             }
 
                             captionInput.value = finalCaption;
@@ -227,28 +233,27 @@
 
                     // 3. Sukses Upload
                     this.on("successmultiple", function(files, response) {
-                        // Dropzone hanya mengembalikan status, kita perlu redirect jika berhasil
-                        if (response.redirect) {
-                            window.location.href = response.redirect;
-                        } else {
-                            // Jika tidak ada redirect (tergantung implementasi controller)
-                            notificationArea.innerHTML = `<div class="alert alert-success">Evidence berhasil di-upload!</div>`;
-                            notificationArea.style.display = 'block';
-                            
-                            form.querySelector('#lokasi').value = '';
-                            form.querySelector('#deskripsi').value = '';
-                            form.querySelector('#pangwas_id').selectedIndex = 0;
-                            form.querySelector('#tematik_id').selectedIndex = 0;
-                            form.querySelector('#po_id').selectedIndex = 0;
-                            self.removeAllFiles(true);
-
-                            submitButton.disabled = false;
-                            submitButton.innerText = 'Upload Evidence';
-
-                            setTimeout(() => {
-                                notificationArea.style.display = 'none';
-                            }, 3000);
-                        }
+                        // Tampilkan notifikasi sukses
+                        notificationArea.innerHTML = `
+                            <div class="alert alert-success">
+                                ${response.message || 'Evidence berhasil di-upload!'}
+                            </div>
+                        `;
+                        notificationArea.style.display = 'block';
+                        
+                        // Reset form
+                        form.querySelector('#lokasi').value = '';
+                        form.querySelector('#deskripsi').value = '';
+                        form.querySelector('#pangwas_id').selectedIndex = 0;
+                        form.querySelector('#tematik_id').selectedIndex = 0;
+                        form.querySelector('#po_id').selectedIndex = 0;
+                        self.removeAllFiles(true);
+                        
+                        submitButton.disabled = false;
+                        submitButton.innerText = 'Upload Evidence';
+                        
+                        // Scroll ke atas biar notifikasi keliatan
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
                     });
 
                     // 4. Gagal Upload
