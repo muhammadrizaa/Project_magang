@@ -1,12 +1,10 @@
 <x-admin-layout>
-    {{-- Ganti 'x-admin-layout' jika nama komponen layout Anda berbeda --}}
-    
     <style>
         /* CSS KHUSUS UNTUK TAMPILAN TABEL (CSS MURNI) */
         .card-table { 
             background-color: #ffffff; 
             border-radius: 8px; 
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Bayangan modern */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             overflow-x: auto; 
             border: 1px solid #e5e7eb; 
         }
@@ -39,7 +37,7 @@
         }
         .action-link { 
             text-decoration: none; 
-            color: #4f46e5; /* Warna Edit */
+            color: #4f46e5;
             margin-right: 1rem; 
             font-weight: 500; 
             transition: color 0.15s; 
@@ -48,7 +46,7 @@
             color: #3730a3; 
         }
         .delete-btn { 
-            color: #dc2626; /* Warna Hapus */
+            color: #dc2626;
             font-weight: 500; 
             cursor: pointer; 
             border: none; 
@@ -82,14 +80,13 @@
             margin-bottom: 1.5rem; 
         }
         .alert-error {
-            background-color: #fee2e2; border-left: 4px solid #ef4444; color: #b91c1c; padding: 1rem; margin-bottom: 1.5rem;
+            background-color: #fee2e2; 
+            border-left: 4px solid #ef4444; 
+            color: #b91c1c; 
+            padding: 1rem; 
+            margin-bottom: 1.5rem;
         }
-        /* Badge Status (Meskipun diganti, saya biarkan untuk jaga-jaga) */
-        .badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
-        .badge-done { background-color: #dcfce7; color: #166534; border: 1px solid #16a34a; }
-        .badge-progress { background-color: #fef9c3; color: #a16207; border: 1px solid #facc15; }
         
-        /* Gaya Button Baru dari view Evidence */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -105,8 +102,9 @@
         }
         .btn-blue { background-color: #2563eb; }
         .btn-blue:hover { background-color: #1d4ed8; }
+        .btn-red { background-color: #dc2626; }
+        .btn-red:hover { background-color: #b91c1c; }
 
-        /* Gaya Modal Baru dari view Evidence */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -121,9 +119,9 @@
             border-radius: 10px;
             padding: 20px;
             width: 90%;
-            max-width: 1000px; /* Batasi lebar modal */
+            max-width: 1000px;
             height: 90%;
-            max-height: 700px; /* Batasi tinggi modal */
+            max-height: 700px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -184,7 +182,7 @@
         }
     </style>
     
-    <div class="container" style="max-width: 1000px; margin: 0 auto; padding: 20px;" x-data="{ modalOpen: false, evidenceFiles: [] }">
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;" x-data="{ modalOpen: false, evidenceFiles: [], currentPO: '' }">
         <h1 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem;">Kelola Data Purchase Order</h1>
 
         @if (session('success'))
@@ -212,7 +210,7 @@
                     <tr>
                         <th>No</th>
                         <th>Nomor Purchase Order (No. PO)</th>
-                        <th>Detail Foto Evidence</th> {{-- DIGANTI DARI 'Status' --}}
+                        <th>Detail Foto Evidence</th>
                         <th>Dibuat Pada</th>
                         <th style="text-align: center;">Aksi</th>
                     </tr>
@@ -220,33 +218,42 @@
                 <tbody>
                     @forelse ($po_list as $po)
                         @php
-                            // Mengambil semua file evidence dari PO. 
-                            // Asumsi: PO memiliki relasi 'evidences', dan setiap evidence memiliki 'file_path'
-                            $allFiles = $po->evidences->flatMap(function($evidence) {
-                                // Pastikan file_path adalah array yang dapat diulang
-                                $files = is_array($evidence->file_path) ? $evidence->file_path : (is_string($evidence->file_path) ? json_decode($evidence->file_path, true) : []);
-                                return collect($files)->map(function($file) use ($evidence) {
-                                    // Menggabungkan data file dengan data evidence (misal: caption)
-                                    return [
-                                        'file_path' => $file['file_path'] ?? $file['path'] ?? $file, // Ambil path file
-                                        'caption' => ($evidence->user->name ?? 'N/A') . ' - ' . ($evidence->tematik->nama_tematik ?? 'N/A') . ' (' . ($evidence->lokasi ?? 'N/A') . ')', // Caption yang lebih detail
-                                    ];
-                                });
-                            })->all();
+                            // Ambil semua evidence dari PO ini
+                            $allFiles = [];
+                            foreach($po->evidences as $evidence) {
+                                // Pastikan file_path adalah array
+                                $files = is_array($evidence->file_path) 
+                                    ? $evidence->file_path 
+                                    : (is_string($evidence->file_path) ? json_decode($evidence->file_path, true) : []);
+                                
+                                // Normalisasi struktur file
+                                foreach($files as $file) {
+                                    // Handle berbagai struktur file_path
+                                    if (is_array($file)) {
+                                        $filePath = $file['path'] ?? ($file['file_path'] ?? null);
+                                        $fileCaption = $file['caption'] ?? '';
+                                    } else {
+                                        $filePath = $file;
+                                        $fileCaption = '';
+                                    }
+                                    
+                                    if ($filePath) {
+                                        $allFiles[] = [
+                                            'path' => $filePath,
+                                            'caption' => $fileCaption ?: (($evidence->user->name ?? 'N/A') . ' - ' . ($evidence->lokasi ?? 'N/A'))
+                                        ];
+                                    }
+                                }
+                            }
                             $filesJson = json_encode($allFiles);
                             $fileCount = count($allFiles);
                         @endphp
                         <tr>
+                            <td>{{ $po_list->firstItem() + $loop->index }}</td>
+                            <td style="font-weight: 500; color: #1f2937;">{{ $po->no_po }}</td>
                             <td>
-                                {{ $po_list->firstItem() + $loop->index }} 
-                            </td>
-                            <td style="font-weight: 500; color: #1f2937;">
-                                {{ $po->no_po }}
-                            </td>
-                            <td>
-                                {{-- Tombol Detail Foto (Referensi dari View Evidence) --}}
                                 <button
-                                    @click="modalOpen = true; evidenceFiles = {{ $filesJson }}"
+                                    @click="modalOpen = true; evidenceFiles = {{ $filesJson }}; currentPO = '{{ $po->no_po }}'"
                                     class="btn btn-blue"
                                     @if($fileCount === 0) disabled style="opacity: 0.5; cursor: not-allowed;" @endif
                                 >
@@ -256,15 +263,12 @@
                                 @if($fileCount === 0)
                                     <div style="font-size: 0.75rem; color: #dc2626; margin-top: 4px;">Belum ada evidence</div>
                                 @endif
-                            </td> {{-- PENGGANTI KOLOM STATUS --}}
-                            <td style="color: #6b7280;">
-                                {{ $po->created_at ? $po->created_at->format('d M Y H:i') : '-' }}
                             </td>
+                            <td style="color: #6b7280;">{{ $po->created_at ? $po->created_at->format('d M Y H:i') : '-' }}</td>
                             <td style="text-align: center;">
                                 <a href="{{ route('admin.po.edit', $po->id) }}" class="action-link">
                                     <i class="fa-solid fa-edit" style="margin-right: 4px;"></i> Edit
                                 </a>
-
                                 <form action="{{ route('admin.po.destroy', $po->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('APAKAH ANDA YAKIN INGIN MENGHAPUS DATA PO INI?');">
                                     @csrf
                                     @method('DELETE')
@@ -291,28 +295,25 @@
             </div>
         @endif
 
-        {{-- ===================== 🔹 MODAL DETAIL FOTO (Referensi dari View Evidence) ===================== --}}
-        <div x-show="modalOpen" class="modal-overlay" style="display:none;">
+        {{-- MODAL DETAIL FOTO --}}
+        <div x-show="modalOpen" class="modal-overlay" style="display:none;" x-cloak>
             <div class="modal-content" @click.away="modalOpen = false">
                 <div class="modal-header-clean">
-                    <h3>Detail File Evidence dari PO {{ $po->no_po ?? 'Ini' }}</h3>
+                    <h3>Detail File Evidence dari PO <span x-text="currentPO"></span></h3>
                     <span style="color:#6b7280;">Total <span x-text="evidenceFiles.length">0</span> Foto</span>
                 </div>
 
                 <div class="modal-content-body">
-                    <template x-if="evidenceFiles && evidenceFiles.length > 0">
-                        <template x-for="(fileData, index) in evidenceFiles" :key="index">
-                            <div class="image-preview-item">
-                                <div class="image-container">
-                                    {{-- Sesuaikan path jika perlu, tergantung struktur file storage Anda --}}
-                                    <img :src="'{{ asset('storage') }}/' + (fileData.file_path || fileData.path || fileData)" :alt="'Evidence ' + (index + 1)" loading="lazy">
-                                </div>
-                                <p class="image-caption" x-text="fileData.caption || (typeof fileData === 'string' ? 'Foto Ke-' + (index + 1) : (fileData.file_path || fileData.path))"></p>
+                    <template x-for="(fileData, index) in evidenceFiles" :key="index">
+                        <div class="image-preview-item">
+                            <div class="image-container">
+                                <img :src="'{{ asset('storage') }}/' + fileData.path" :alt="'Evidence ' + (index + 1)" loading="lazy">
                             </div>
-                        </template>
+                            <p class="image-caption" x-text="fileData.caption || 'Foto Ke-' + (index + 1)"></p>
+                        </div>
                     </template>
-                    <template x-if="!evidenceFiles || evidenceFiles.length === 0">
-                        <p style="text-align:center; font-size:0.9rem; color:#6b7280;">Tidak ada file untuk ditampilkan.</p>
+                    <template x-if="evidenceFiles.length === 0">
+                        <p style="text-align:center; font-size:0.9rem; color:#6b7280; grid-column: 1/-1;">Tidak ada file untuk ditampilkan.</p>
                     </template>
                 </div>
 
@@ -321,7 +322,6 @@
                 </div>
             </div>
         </div>
-        {{-- AKHIR MODAL --}}
 
     </div>
 </x-admin-layout>
