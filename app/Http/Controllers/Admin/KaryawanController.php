@@ -13,7 +13,7 @@ class KaryawanController extends Controller
 {
     public function index()
     {
-        $karyawan = User::where('role', 'karyawan')->latest()->paginate(10);
+        $karyawan = User::where('role', 'karyawan')->latest('updated_at')->paginate(10);
         return view('admin.karyawan.index', compact('karyawan'));
     }
 
@@ -56,15 +56,17 @@ class KaryawanController extends Controller
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // Update data - ini akan otomatis update 'updated_at'
         $karyawan->update([
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
         ]);
 
+        // Update password jika diisi - ini juga update 'updated_at'
         if ($request->filled('password')) {
             $karyawan->password = Hash::make($request->password);
-            $karyawan->save();
+            $karyawan->save(); // Ini akan trigger updated_at
         }
 
         return redirect()->route('admin.karyawan.index')->with('success', 'Data karyawan berhasil diperbarui.');
