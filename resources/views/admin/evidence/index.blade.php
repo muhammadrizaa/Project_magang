@@ -235,7 +235,7 @@
                         <th>Waspang</th>
                         <th>Lokasi / Tanggal</th>
                         <th>Detail Foto</th>
-                        <th>Status</th>
+                        <th style="text-align: center;">Status</th>
                         <th style="text-align: center;">Aksi</th>
                     </tr>
                 </thead>

@@ -133,8 +133,8 @@
                         <th>Tematik</th>
                         <th>Waspang</th>
                         <th>Foto</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
+                        <th style="text-align: center;">Status</th>
+                        <th style="text-align: center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
