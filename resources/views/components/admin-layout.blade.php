@@ -39,14 +39,14 @@
             <h2>Telkom Akses</h2>
         </div>
         
-        <<a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"><i class="fa-solid fa-tachometer-alt"></i> Dashboard</a>
-<a href="{{ route('admin.karyawan.index') }}" class="{{ request()->routeIs('admin.karyawan.*') ? 'active' : '' }}"><i class="fa-solid fa-users"></i> Kelola Karyawan</a>
-<a href="{{ route('admin.pangwas.index') }}" class="{{ request()->routeIs('admin.pangwas.*') ? 'active' : '' }}"><i class="fa-solid fa-user-tie"></i> Kelola Waspang</a>
-<a href="{{ route('admin.tematik.index') }}" class="{{ request()->routeIs('admin.tematik.*') ? 'active' : '' }}"><i class="fa-solid fa-tags"></i> Kelola Tematik</a>
-<a href="{{ route('admin.po.index') }}" class="{{ request()->routeIs('admin.po.*') ? 'active' : '' }}"><i class="fa-solid fa-money-check-dollar"></i> Kelola Purchase Order</a>
-<a href="{{ route('admin.evidence.index') }}" class="{{ request()->routeIs('admin.evidence.*') ? 'active' : '' }}"><i class="fa-solid fa-folder-open"></i> Kelola Evidence</a>
-<a href="{{ route('admin.laporan.index') }}" class="{{ request()->routeIs('admin.laporan.index') ? 'active' : '' }}"><i class="fa-solid fa-file-invoice"></i> Generate Laporan</a>
-<a href="{{ route('profile.edit') }}" class="{{ request()->routeIs('profile.edit') ? 'active' : '' }}"><i class="fa-solid fa-user-circle"></i> Profil Saya</a>
+        <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"><i class="fa-solid fa-tachometer-alt"></i> Dashboard</a>
+        <a href="{{ route('admin.karyawan.index') }}" class="{{ request()->routeIs('admin.karyawan.*') ? 'active' : '' }}"><i class="fa-solid fa-users"></i> Kelola Karyawan</a>
+        <a href="{{ route('admin.pangwas.index') }}" class="{{ request()->routeIs('admin.pangwas.*') ? 'active' : '' }}"><i class="fa-solid fa-user-tie"></i> Kelola Waspang</a>
+        <a href="{{ route('admin.tematik.index') }}" class="{{ request()->routeIs('admin.tematik.*') ? 'active' : '' }}"><i class="fa-solid fa-tags"></i> Kelola Tematik</a>
+        <a href="{{ route('admin.po.index') }}" class="{{ request()->routeIs('admin.po.*') ? 'active' : '' }}"><i class="fa-solid fa-money-check-dollar"></i> Kelola Purchase Order</a>
+        <a href="{{ route('admin.evidence.index') }}" class="{{ request()->routeIs('admin.evidence.*') ? 'active' : '' }}"><i class="fa-solid fa-folder-open"></i> Kelola Evidence</a>
+        <a href="{{ route('admin.laporan.index') }}" class="{{ request()->routeIs('admin.laporan.index') ? 'active' : '' }}"><i class="fa-solid fa-file-invoice"></i> Generate Laporan</a>
+        <a href="{{ route('profile.edit') }}" class="{{ request()->routeIs('profile.edit') ? 'active' : '' }}"><i class="fa-solid fa-user-circle"></i> Profil Saya</a>
         
         <div class="logout">
             <form method="POST" action="{{ route('logout') }}">
@@ -61,8 +61,6 @@
     <div class="content">
         <div class="topbar">
             <div class="welcome">Selamat Datang Admin, di Website PT Telkom Akses Banjarmasin</div>
-            
-            {{-- 💡 Perubahan: Beri ID pada elemen waktu --}}
             <div class="date" id="current-time"></div> 
         </div>
 
@@ -71,35 +69,12 @@
 
     @stack('scripts')
 
-    {{-- 💡 SCRIPT BARU: Realtime Clock --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const timeElement = document.getElementById('current-time');
 
             function updateTime() {
                 const now = new Date();
-                
-                // Opsi untuk format tanggal dan waktu
-                const options = { 
-                    day: '2-digit', month: 'long', year: 'numeric', 
-                    hour: '2-digit', minute: '2-digit', second: '2-digit', 
-                    hour12: false // Menggunakan format 24 jam
-                };
-
-                // Menggunakan Intl.DateTimeFormat untuk format lokal (Indonesia)
-                const formatter = new Intl.DateTimeFormat('id-ID', options);
-                
-                // Ambil tanggal dan waktu yang sudah diformat
-                const formattedTime = formatter.format(now);
-                
-                // Pisahkan tanggal dan waktu untuk tampilan yang lebih rapi
-                const parts = formattedTime.split(' ');
-                
-                // Biasanya format default Intl.DateTimeFormat 'id-ID' adalah dd/mm/yyyy hh:mm:ss
-                // Kita akan coba format ulang secara manual: "DD Bulan YYYY HH:mm:ss"
-
-                // Jika formatnya sudah sesuai keinginan (misal: 20 Oktober 2025 16:31:43)
-                // Kita gunakan saja output dari formatter. Jika tidak, bisa dipecah:
                 
                 const day = now.getDate().toString().padStart(2, '0');
                 const month = now.toLocaleDateString('id-ID', { month: 'long' });
@@ -109,7 +84,6 @@
                 timeElement.textContent = `${day} ${month} ${year} ${time}`;
             }
 
-            // Panggil fungsi sekali segera, lalu set interval
             updateTime(); 
             setInterval(updateTime, 1000); 
         });

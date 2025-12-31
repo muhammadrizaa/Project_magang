@@ -180,21 +180,72 @@
             border-top: 1px dashed #e5e7eb;
             padding-top: 6px;
         }
+
+        /* PAGINATION STYLING */
+        .pagination-container {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .pagination-btn {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .pagination-btn.active {
+            background-color: #dc2626;
+            color: white;
+            border-color: #dc2626;
+        }
+        .pagination-btn.disabled {
+            color: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .pagination-btn:not(.active):not(.disabled):hover {
+            background-color: #f3f4f6;
+            color: #dc2626;
+            border-color: #dc2626;
+        }
     </style>
     
     <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;" x-data="{ modalOpen: false, evidenceFiles: [], currentPO: '' }">
         <h1 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem;">Kelola Data Purchase Order</h1>
 
+        <!-- Alert Success -->
         @if (session('success'))
-            <div class="alert-box" role="alert">
-                <p style="font-weight: 700;">Berhasil! 🎉</p>
-                <p>{{ session('success') }}</p>
+            <div id="alert-success" style="background-color: #d1fae5; border: 1px solid #6ee7b7; color: #065f46; padding: 12px 16px; border-radius: 8px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <i class="fa-solid fa-check-circle" style="margin-right: 8px;"></i>
+                    <strong>Berhasil!</strong>
+                    @if (str_contains(session('success'), 'ditambahkan'))
+                        Data Purchase Order berhasil ditambahkan.
+                    @elseif (str_contains(session('success'), 'dihapus'))
+                        Data Purchase Order berhasil dihapus.
+                    @elseif (str_contains(session('success'), 'diubah'))
+                        Data Purchase Order berhasil diubah.
+                    @else
+                        {{ session('success') }}
+                    @endif
+                </div>
+                <button type="button" onclick="document.getElementById('alert-success').remove();" style="background: none; border: none; color: #065f46; cursor: pointer; font-size: 1.5rem;">×</button>
             </div>
         @endif
+
+        <!-- Alert Error -->
         @if (session('error'))
-            <div class="alert-error" role="alert">
-                <p style="font-weight: 700;">Gagal!</p>
-                <p>{{ session('error') }}</p>
+            <div id="alert-error" style="background-color: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <i class="fa-solid fa-exclamation-circle" style="margin-right: 8px;"></i>
+                    <strong>Error!</strong> {{ session('error') }}
+                </div>
+                <button type="button" onclick="document.getElementById('alert-error').remove();" style="background: none; border: none; color: #991b1b; cursor: pointer; font-size: 1.5rem;">×</button>
             </div>
         @endif
 
@@ -269,10 +320,10 @@
                                 <a href="{{ route('admin.po.edit', $po->id) }}" class="action-link">
                                     <i class="fa-solid fa-edit" style="margin-right: 4px;"></i> Edit
                                 </a>
-                                <form action="{{ route('admin.po.destroy', $po->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('APAKAH ANDA YAKIN INGIN MENGHAPUS DATA PO INI?');">
+                                <form action="{{ route('admin.po.destroy', $po->id) }}" method="POST" style="display: inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="delete-btn">
+                                    <button type="submit" class="delete-btn" onclick="return confirm('APAKAH ANDA YAKIN INGIN MENGHAPUS DATA PO INI?');">
                                         <i class="fa-solid fa-trash-alt" style="margin-right: 4px;"></i> Hapus
                                     </button>
                                 </form>
@@ -290,8 +341,29 @@
         </div>
         
         @if ($po_list->hasPages())
-            <div style="margin-top: 1.5rem; text-align: center;">
-                {{ $po_list->links() }}
+            <div class="pagination-container">
+                <!-- Previous Page Link -->
+                @if ($po_list->onFirstPage())
+                    <span class="pagination-btn disabled">← Previous</span>
+                @else
+                    <a href="{{ $po_list->previousPageUrl() }}" class="pagination-btn">← Previous</a>
+                @endif
+
+                <!-- Pagination Elements -->
+                @foreach ($po_list->getUrlRange(1, $po_list->lastPage()) as $page => $url)
+                    @if ($page == $po_list->currentPage())
+                        <span class="pagination-btn active">{{ $page }}</span>
+                    @else
+                        <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
+                    @endif
+                @endforeach
+
+                <!-- Next Page Link -->
+                @if ($po_list->hasMorePages())
+                    <a href="{{ $po_list->nextPageUrl() }}" class="pagination-btn">Next →</a>
+                @else
+                    <span class="pagination-btn disabled">Next →</span>
+                @endif
             </div>
         @endif
 

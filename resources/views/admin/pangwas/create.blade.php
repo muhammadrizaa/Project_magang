@@ -75,7 +75,7 @@
     </style>
     
     <div class="container" style="max-width: 900px; margin: 0 auto; padding: 20px;">
-        <h1 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem;">Tambah Pangwas Baru</h1>
+        <h1 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem;">Tambah Waspang Baru</h1>
 
         @if ($errors->any())
             <div class="error-alert">
@@ -94,7 +94,7 @@
                 @csrf
                 
                 <div style="margin-bottom: 1.5rem;">
-                    <label for="nama_pangwas" class="form-label">Nama Pangwas:</label>
+                    <label for="nama_pangwas" class="form-label">Nama Waspang:</label>
                     <input type="text" 
                            name="nama_pangwas" 
                            id="nama_pangwas" 
@@ -114,7 +114,7 @@
                         Batal
                     </a>
                     <button type="submit" class="btn-submit">
-                        <i class="fa-solid fa-save" style="margin-right: 0.5rem;"></i> Simpan Pangwas
+                        <i class="fa-solid fa-save" style="margin-right: 0.5rem;"></i> Simpan Waspang
                     </button>
                 </div>
             </form>

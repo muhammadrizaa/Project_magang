@@ -4,7 +4,7 @@
         .card-table {
             background-color: #ffffff;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Bayangan */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             overflow-x: auto;
             border: 1px solid #e5e7eb;
         }
@@ -57,7 +57,6 @@
         .delete-btn:hover {
             color: #b91c1c;
         }
-        /* Style untuk tombol Tambah Baru */
         .btn-add {
             background-color: #dc2626;
             color: white; 
@@ -78,9 +77,38 @@
     <div class="container" style="max-width: 1000px; margin: 0 auto; padding: 20px;">
         <h1 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem;">Kelola Data Waspang</h1>
 
-        {{-- Tempatkan notifikasi di sini --}}
+        <!-- Alert Success -->
+        @if (session('success'))
+            <div id="alert-success" style="background-color: #d1fae5; border: 1px solid #6ee7b7; color: #065f46; padding: 12px 16px; border-radius: 8px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <i class="fa-solid fa-check-circle" style="margin-right: 8px;"></i>
+                    <strong>Berhasil!</strong> 
+                    @if (str_contains(session('success'), 'ditambahkan'))
+                        Data Waspang berhasil ditambahkan.
+                    @elseif (str_contains(session('success'), 'dihapus'))
+                        Data Waspang berhasil dihapus.
+                    @elseif (str_contains(session('success'), 'diubah'))
+                        Data Waspang berhasil diubah.
+                    @else
+                        {{ session('success') }}
+                    @endif
+                </div>
+                <button type="button" onclick="document.getElementById('alert-success').remove();" style="background: none; border: none; color: #065f46; cursor: pointer; font-size: 1.5rem;">×</button>
+            </div>
+        @endif
 
-        <!-- Tombol Tambah Pangwas (Menggunakan CSS Murni) -->
+        <!-- Alert Error -->
+        @if (session('error'))
+            <div id="alert-error" style="background-color: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <i class="fa-solid fa-exclamation-circle" style="margin-right: 8px;"></i>
+                    <strong>Error!</strong> {{ session('error') }}
+                </div>
+                <button type="button" onclick="document.getElementById('alert-error').remove();" style="background: none; border: none; color: #991b1b; cursor: pointer; font-size: 1.5rem;">×</button>
+            </div>
+        @endif
+
+        <!-- Tombol Tambah Pangwas -->
         <div style="margin-bottom: 1.5rem; display: flex; justify-content: flex-end;">
             <a href="{{ route('admin.pangwas.create') }}" class="btn-add">
                 <i class="fa-solid fa-plus" style="margin-right: 0.5rem;"></i> Tambah Waspang Baru
@@ -102,7 +130,7 @@
                     @forelse ($pangwas_list as $pangwas)
                         <tr>
                             <td>
-                                {{ $pangwas_list->firstItem() + $loop->index }} 
+                                {{ $loop->index + 1 }} 
                             </td>
                             <td style="font-weight: 500; color: #1f2937;">
                                 {{ $pangwas->nama_pangwas }}
@@ -116,11 +144,11 @@
                                     <i class="fa-solid fa-edit" style="margin-right: 4px;"></i> Edit
                                 </a>
 
-                                <!-- Tombol Hapus (Form DELETE) -->
-                                <form action="{{ route('admin.pangwas.destroy', $pangwas->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('APAKAH ANDA YAKIN INGIN MENGHAPUS DATA PANGWAS INI?');">
+                                <!-- Tombol Hapus (Form DELETE) - DIPERBAIKI -->
+                                <form action="{{ route('admin.pangwas.destroy', $pangwas->id) }}" method="POST" style="display: inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="delete-btn">
+                                    <button type="submit" class="delete-btn" onclick="return confirm('APAKAH ANDA YAKIN INGIN MENGHAPUS DATA WASPANG INI?');">
                                         <i class="fa-solid fa-trash-alt" style="margin-right: 4px;"></i> Hapus
                                     </button>
                                 </form>
@@ -129,7 +157,7 @@
                     @empty
                         <tr>
                             <td colspan="4" style="text-align: center; padding: 40px; color: #6b7280;">
-                                Data Pangwas masih kosong. Silakan tambahkan Waspang baru.
+                                Data Waspang masih kosong. Silakan tambahkan Waspang baru.
                             </td>
                         </tr>
                     @endforelse
@@ -139,8 +167,29 @@
         
         <!-- Pagination -->
         @if ($pangwas_list->hasPages())
-            <div style="margin-top: 1.5rem; text-align: center;">
-                {{ $pangwas_list->links() }}
+            <div style="margin-top: 2rem; display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                <!-- Previous Page Link -->
+                @if ($pangwas_list->onFirstPage())
+                    <span style="padding: 8px 12px; color: #9ca3af; cursor: not-allowed; border: 1px solid #e5e7eb; border-radius: 4px;">← Previous</span>
+                @else
+                    <a href="{{ $pangwas_list->previousPageUrl() }}" style="padding: 8px 12px; color: #fff; background-color: #dc2626; text-decoration: none; border: 1px solid #dc2626; border-radius: 4px;">← Previous</a>
+                @endif
+
+                <!-- Pagination Elements -->
+                @foreach ($pangwas_list->getUrlRange(1, $pangwas_list->lastPage()) as $page => $url)
+                    @if ($page == $pangwas_list->currentPage())
+                        <span style="padding: 8px 12px; color: #fff; background-color: #dc2626; border: 1px solid #dc2626; border-radius: 4px; font-weight: 600;">{{ $page }}</span>
+                    @else
+                        <a href="{{ $url }}" style="padding: 8px 12px; color: #4f46e5; background-color: #f3f4f6; text-decoration: none; border: 1px solid #e5e7eb; border-radius: 4px;">{{ $page }}</a>
+                    @endif
+                @endforeach
+
+                <!-- Next Page Link -->
+                @if ($pangwas_list->hasMorePages())
+                    <a href="{{ $pangwas_list->nextPageUrl() }}" style="padding: 8px 12px; color: #fff; background-color: #dc2626; text-decoration: none; border: 1px solid #dc2626; border-radius: 4px;">Next →</a>
+                @else
+                    <span style="padding: 8px 12px; color: #9ca3af; cursor: not-allowed; border: 1px solid #e5e7eb; border-radius: 4px;">Next →</span>
+                @endif
             </div>
         @endif
 

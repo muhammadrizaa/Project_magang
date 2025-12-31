@@ -14,12 +14,10 @@ class PangwasController extends Controller
      * Menampilkan daftar semua Pangwas.
      */
     public function index()
-    {
-        // Menggunakan latest() agar data terbaru muncul di atas, mengatasi masalah sorting
-        $pangwas_list = Pangwas::latest()->paginate(10); 
-        
-        return view('admin.pangwas.index', compact('pangwas_list'));
-    }
+{
+    $pangwas_list = Pangwas::oldest('created_at')->paginate(10);
+    return view('admin.pangwas.index', compact('pangwas_list'));
+}
 
     /**
      * Menampilkan formulir untuk membuat Pangwas baru.
