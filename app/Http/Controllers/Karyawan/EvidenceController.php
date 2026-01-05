@@ -58,7 +58,7 @@ class EvidenceController extends Controller
             'lokasi' => ['required', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string'],
             'file' => ['required', 'array', 'min:1'],
-            'file.*' => ['image', 'mimes:jpeg,jpg,png'], // 🔥 HAPUS LIMIT SIZE DULU
+            'file.*' => ['image', 'mimes:jpeg,jpg,png'],
             'caption' => ['nullable', 'array'],
             'caption.*' => ['nullable', 'string', 'max:255'],
             
@@ -111,12 +111,13 @@ class EvidenceController extends Controller
                 // --------------------------------
             ]);
 
-            // PENTING: Mengembalikan JSON response untuk Dropzone
+            // 🔥 RESPONSE YANG LEBIH LENGKAP UNTUK NOTIFIKASI
             return response()->json([
                 'success' => true, 
-                'message' => 'Evidence berhasil di-upload! Total ' . count($fileData) . ' foto telah disimpan.',
+                'message' => 'Evidence berhasil di-upload!',
+                'total_files' => count($fileData),
+                'files_detail' => 'Total ' . count($fileData) . ' foto telah disimpan dengan sukses.',
                 'redirect' => route('karyawan.evidence.index'),
-                'total_files' => count($fileData)
             ], 200);
 
         } catch (\Exception $e) {

@@ -21,8 +21,25 @@
         .alert-success { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
         
         /* Dropzone Styling */
-        .dropzone { border: 2px dashed #dc2626; border-radius: 12px; background: #fee2e2; padding: 15px; transition: all 0.3s; min-height: 150px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; }
-        .dropzone .dz-message { color: #b91c1c; }
+        .dropzone { 
+            border: 2px dashed #dc2626; 
+            border-radius: 12px; 
+            background: #fee2e2; 
+            padding: 15px; 
+            transition: all 0.3s; 
+            min-height: 150px; 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            align-items: center;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        .dropzone .dz-message { 
+            color: #b91c1c;
+            cursor: pointer;
+            pointer-events: auto;
+        }
         .dropzone .dz-preview { background: #fff; border-radius: 14px; border: 1px solid #e5e7eb; padding: 12px; margin: 12px; width: 220px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; position: relative; }
         .dropzone .dz-preview .dz-image { width: 100%; height: 140px; margin-bottom: 10px; }
         .dropzone .dz-preview .dz-image img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
@@ -126,11 +143,12 @@
                 autoProcessQueue: false,
                 uploadMultiple: true,
                 parallelUploads: 100,
-                maxFiles: null, // 🔥 UNLIMITED FILES
-                maxFilesize: null, // 🔥 UNLIMITED SIZE
+                maxFiles: null,
+                maxFilesize: null,
                 acceptedFiles: 'image/*',
                 addRemoveLinks: false,
                 previewTemplate: previewTemplate,
+                clickable: true,
                 
                 init: function() {
                     const self = this;
@@ -193,7 +211,7 @@
                             document.querySelector("#tematik_id").value === "" ||
                             document.querySelector("#po_id").value === "") {
                             
-                            notificationArea.innerHTML = `<div class="alert alert-danger">Lokasi, Pengawas, Tematik, dan Nomor PO wajib diisi!</div>`;
+                            notificationArea.innerHTML = `<div class="alert alert-danger">Lokasi, Waspang, Tematik, dan Nomor PO wajib diisi!</div>`;
                             notificationArea.style.display = 'block';
                             return;
                         }
@@ -233,27 +251,12 @@
 
                     // 3. Sukses Upload
                     this.on("successmultiple", function(files, response) {
-                        // Tampilkan notifikasi sukses
-                        notificationArea.innerHTML = `
-                            <div class="alert alert-success">
-                                ${response.message || 'Evidence berhasil di-upload!'}
-                            </div>
-                        `;
-                        notificationArea.style.display = 'block';
+                        // 🔥 LANGSUNG REDIRECT TANPA DELAY
+                        localStorage.setItem('successMessage', response.message || 'Upload berhasil');
+                        localStorage.setItem('totalFiles', response.total_files || files.length);
                         
-                        // Reset form
-                        form.querySelector('#lokasi').value = '';
-                        form.querySelector('#deskripsi').value = '';
-                        form.querySelector('#pangwas_id').selectedIndex = 0;
-                        form.querySelector('#tematik_id').selectedIndex = 0;
-                        form.querySelector('#po_id').selectedIndex = 0;
-                        self.removeAllFiles(true);
-                        
-                        submitButton.disabled = false;
-                        submitButton.innerText = 'Upload Evidence';
-                        
-                        // Scroll ke atas biar notifikasi keliatan
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        // Redirect langsung ke halaman index
+                        window.location.href = response.redirect || '{{ route("karyawan.evidence.index") }}';
                     });
 
                     // 4. Gagal Upload

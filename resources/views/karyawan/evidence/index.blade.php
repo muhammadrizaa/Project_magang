@@ -3,7 +3,20 @@
         /* === STYLE ASLI DARI KODE LU === */
         .card { background-color: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
         .card-header { font-size: 1.25rem; font-weight: 600; color: #1f2937; border-bottom: 1px solid #e5e7eb; padding-bottom: 16px; margin-bottom: 24px; }
-        .alert-success { background-color: #d1fae5; border-left: 4px solid #34d399; color: #065f46; padding: 16px; margin-top: 16px; }
+        .alert-success { background-color: #d1fae5; border-left: 4px solid #34d399; color: #065f46; padding: 16px; margin-top: 16px; margin-bottom: 20px; border-radius: 8px; }
+        .alert-success-custom {
+            background-color: #ecfdf5;
+            border-left: 4px solid #10b981;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            margin-top: 16px;
+            color: #065f46;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+            animation: slideInDown 0.4s ease-out;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
         .table-wrapper { overflow-x: auto; margin-top: 24px; }
         .styled-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
         .styled-table thead tr { background-color: #f9fafb; text-align: left; color: #374151; text-transform: uppercase; font-size: 0.75rem; }
@@ -13,10 +26,10 @@
         .badge-pending { background-color: #fef9c3; color: #a16207; }
         .badge-approved { background-color: #dcfce7; color: #166534; }
         .badge-rejected { background-color: #fee2e2; color: #991b1b; }
-        .btn { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 6px; font-weight: 500; font-size: 0.8rem; text-decoration: none; color: white; border: none; cursor: pointer; transition: background-color 0.2s; }
-        .btn-blue { background-color: #2563eb; } .btn-blue:hover { background-color: #1d4ed8; }
-        .btn-red { background-color: #dc2626; } .btn-red:hover { background-color: #b91c1c; }
-        .btn-lihat { background-color: #3b82f6; } .btn-lihat:hover { background-color: #2563eb; } 
+        .btn { display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 6px; font-weight: 500; font-size: 0.85rem; text-decoration: none; color: white; border: none; cursor: pointer; transition: all 0.2s; margin: 0 4px; }
+        .btn-blue { background-color: #2563eb; } .btn-blue:hover { background-color: #1d4ed8; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3); }
+        .btn-red { background-color: #ef4444; } .btn-red:hover { background-color: #dc2626; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3); }
+        .btn-lihat { background-color: #3b82f6; } .btn-lihat:hover { background-color: #2563eb; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3); } 
         .btn-gray { background-color: #6b7280; } .btn-gray:hover { background-color: #4b5563; }
 
         /* === PAGINATION === */
@@ -81,7 +94,6 @@
             font-size: 0.8rem;
             color: #374151;
             text-align: center;
-            font-weight: 600;
             word-break: break-word;
         }
     </style>
@@ -89,41 +101,70 @@
     <div class="card" x-data="{ modalOpen: false, evidenceFiles: [], evidenceLocation: '' }">
         <h2 class="card-header">Riwayat Evidence Anda</h2>
 
+        {{-- 🔥 NOTIFIKASI DARI SESSION (Flash Message dari Form) --}}
         @if(session('success'))
-            <div class="alert-success" id="success-alert">{{ session('success') }}</div>
-            <script>
-                // Hilangkan notifikasi setelah 10 detik
-                setTimeout(() => {
-                    const alert = document.getElementById('success-alert');
-                    if (alert) {
-                        alert.style.display = 'none';
-                    }
-                }, 10000);
-            </script>
+            <div class="alert-success-custom" id="success-alert">
+                ✓ {{ session('success') }}
+            </div>
         @endif
         
-        {{-- 🔥 CEK PESAN DARI LOCALSTORAGE (untuk AJAX redirect) --}}
+        {{-- 🔥 NOTIFIKASI DARI LOCALSTORAGE (untuk AJAX redirect) --}}
         <script>
-            const successMessage = localStorage.getItem('successMessage');
-            if (successMessage) {
-                const alertDiv = document.createElement('div');
-                alertDiv.id = 'success-alert-ajax';
-                alertDiv.className = 'alert-success';
-                alertDiv.textContent = successMessage;
+            document.addEventListener('DOMContentLoaded', function() {
+                const successMessage = localStorage.getItem('successMessage');
+                const totalFiles = localStorage.getItem('totalFiles');
                 
-                const cardHeader = document.querySelector('.card-header');
-                cardHeader.insertAdjacentElement('afterend', alertDiv);
+                if (successMessage) {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.id = 'success-alert-ajax';
+                    alertDiv.className = 'alert-success-custom';
+                    
+                    let displayMessage = `✓ ${successMessage}`;
+                    if (totalFiles && totalFiles !== 'null' && parseInt(totalFiles) > 0) {
+                        displayMessage += ` (${totalFiles} foto)`;
+                    }
+                    
+                    alertDiv.textContent = displayMessage;
+                    
+                    const cardHeader = document.querySelector('.card-header');
+                    if (cardHeader) {
+                        cardHeader.insertAdjacentElement('afterend', alertDiv);
+                    }
+                    
+                    // Hapus dari localStorage
+                    localStorage.removeItem('successMessage');
+                    localStorage.removeItem('totalFiles');
+                    
+                    // Hilangkan notifikasi setelah 6 detik dengan efek fade-out
+                    setTimeout(() => {
+                        if (alertDiv && alertDiv.style) {
+                            alertDiv.style.opacity = '0';
+                            alertDiv.style.transition = 'opacity 0.10s ease';
+                            setTimeout(() => {
+                                if (alertDiv.parentNode) {
+                                    alertDiv.remove();
+                                }
+                            }, 400);
+                        }
+                    }, 10000);
+                }
                 
-                // Hapus dari localStorage
-                localStorage.removeItem('successMessage');
-                
-                // Hilangkan setelah 10 detik
-                setTimeout(() => {
-                    alertDiv.style.display = 'none';
-                }, 10000);
-            }
+                // Hilangkan notifikasi session setelah 6 detik
+                const sessionAlert = document.getElementById('success-alert');
+                if (sessionAlert) {
+                    setTimeout(() => {
+                        sessionAlert.style.opacity = '0';
+                        sessionAlert.style.transition = 'opacity 0.10s ease';
+                        setTimeout(() => {
+                            if (sessionAlert.parentNode) {
+                                sessionAlert.remove();
+                            }
+                        }, 400);
+                    }, 10000);
+                }
+            });
         </script>
-
+        
         <div class="table-wrapper">
             <table class="styled-table">
                 <thead>
@@ -150,7 +191,7 @@
                                 <small>{{ $evidence->created_at->format('d M Y H:i') }}</small>
                             </td>
                             <td>{{ $evidence->po->no_po ?? 'N/A' }}</td>
-                            <td style="color: #3b82f6;">{{ $evidence->tematik->nama_tematik ?? 'N/A' }}</td>
+                            <td>{{ $evidence->tematik->nama_tematik ?? 'N/A' }}</td>
                             <td>{{ $evidence->pangwas->nama_pangwas ?? 'N/A' }}</td>
                             <td>
                                 <button 
