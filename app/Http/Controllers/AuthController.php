@@ -11,7 +11,7 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
-            return redirect()->route('admin.dashboard');
+            return $this->redirectByRole(Auth::user()->role);
         }
         return view('auth.login');
     }
@@ -28,12 +28,22 @@ class AuthController extends Controller
         if ($user && Hash::check($request->password, $user->password)) {
             Auth::login($user);
             $request->session()->regenerate();
-            return redirect()->route('admin.dashboard');
+            return $this->redirectByRole($user->role);
         }
 
         return back()->withErrors([
             'username' => 'Username atau password salah.',
         ])->onlyInput('username');
+    }
+
+    private function redirectByRole($role)
+    {
+        return match($role) {
+            'admin'       => redirect()->route('admin.dashboard'),
+            'team leader' => redirect()->route('admin.dashboard'),
+            'karyawan'    => redirect()->route('karyawan.dashboard'),
+            default       => redirect()->route('login'),
+        };
     }
 
     public function logout(Request $request)

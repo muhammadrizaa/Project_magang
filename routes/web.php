@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\WaspangController;
 use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Admin\TematikController;
+use App\Http\Controllers\Karyawan\DashboardController as KaryawanDashboardController;
+use App\Http\Controllers\Karyawan\EvidenceController as KaryawanEvidenceController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,4 +35,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('/waspang', WaspangController::class)->names('waspang');
     Route::resource('/po', PurchaseOrderController::class)->names('po');
     Route::resource('/tematik', TematikController::class)->names('tematik');
+});
+
+Route::middleware('auth')->prefix('karyawan')->name('karyawan.')->group(function () {
+    Route::get('/dashboard', [KaryawanDashboardController::class, 'index'])->name('dashboard');
+    Route::resource('/evidence', KaryawanEvidenceController::class)->names('evidence');
 });
