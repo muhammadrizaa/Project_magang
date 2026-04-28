@@ -74,11 +74,11 @@
             
             {{-- Pangwas (WAJIB) --}}
             <div class="form-group">
-                <label for="pangwas_id">Pilih Waspang (Waspang)</label>
-                <select id="pangwas_id" name="pangwas_id" class="form-group select" required>
+                <label for="waspang_id">Pilih Waspang (Waspang)</label>
+                <select id="waspang_id" name="waspang_id" class="form-group select" required>
                     <option value="">-- Pilih Waspang --</option>
-                    @foreach ($pangwas_list as $pangwas)
-                        <option value="{{ $pangwas->id }}">{{ $pangwas->nama_pangwas }}</option>
+                    @foreach ($waspang_list as $pangwas)
+                        <option value="{{ $pangwas->id }}">{{ $pangwas->nama_waspang }}</option>
                     @endforeach
                 </select>
             </div>
@@ -207,7 +207,7 @@
 
                         // --- 💡 VALIDASI DROPDOWN BARU (Semua Wajib) ---
                         if (document.querySelector("#lokasi").value.trim() === "" ||
-                            document.querySelector("#pangwas_id").value === "" ||
+                            document.querySelector("#waspang_id").value === "" ||
                             document.querySelector("#tematik_id").value === "" ||
                             document.querySelector("#po_id").value === "") {
                             
@@ -235,7 +235,7 @@
                         formData.append("deskripsi", form.querySelector('#deskripsi').value);
                         
                         // --- 💡 TAMBAHKAN DATA DROPDOWN BARU KE FORMDATA ---
-                        formData.append("pangwas_id", form.querySelector('#pangwas_id').value);
+                        formData.append("waspang_id", form.querySelector('#waspang_id').value);
                         formData.append("tematik_id", form.querySelector('#tematik_id').value);
                         formData.append("po_id", form.querySelector('#po_id').value);
                         // ----------------------------------------------------
