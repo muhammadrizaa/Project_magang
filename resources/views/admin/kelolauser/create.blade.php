@@ -5,8 +5,8 @@
         .form-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
         @media (min-width: 768px) { .form-grid { grid-template-columns: repeat(2, 1fr); } }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #374151; }
-        .form-group input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); box-sizing: border-box; }
-        .form-group input:focus { outline: 2px solid transparent; outline-offset: 2px; border-color: #ef4444; box-shadow: 0 0 0 2px #ef4444; }
+        .form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); box-sizing: border-box; }
+        .form-group input:focus, .form-group select:focus { outline: 2px solid transparent; outline-offset: 2px; border-color: #ef4444; box-shadow: 0 0 0 2px #ef4444; }
         .col-span-2 { grid-column: span 2 / span 2; }
         .form-footer { margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; }
         .btn { display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 6px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; }
@@ -16,42 +16,50 @@
         .btn-secondary:hover { background-color: #d1d5db; }
         .error-text { color: #dc2626; font-size: 0.875rem; margin-top: 4px; }
     </style>
-    
+
     <div class="card">
-        <h2 class="card-header">Edit Data Karyawan</h2>
-        <form action="{{ route('admin.karyawan.update', $karyawan->id) }}" method="POST">
+        <h2 class="card-header">Tambah User Baru</h2>
+        <form action="{{ route('admin.kelolauser.store') }}" method="POST">
             @csrf
-            @method('PUT')
             <div class="form-grid">
                 <div class="form-group">
                     <label for="name">Nama Lengkap</label>
-                    <input type="text" name="name" id="name" value="{{ old('name', $karyawan->name) }}" required>
+                    <input type="text" name="name" id="name" value="{{ old('name') }}" required>
                     @error('name') <span class="error-text">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text" name="username" id="username" value="{{ old('username', $karyawan->username) }}" required>
+                    <input type="text" name="username" id="username" value="{{ old('username') }}" required>
                     @error('username') <span class="error-text">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group col-span-2">
-                    <label for="email">Alamat Email</label>
-                    <input type="email" name="email" id="email" value="{{ old('email', $karyawan->email) }}" required>
+                    <label for="email">Alamat Email <span style="color:#9ca3af;">(opsional)</span></label>
+                    <input type="email" name="email" id="email" value="{{ old('email') }}">
                     @error('email') <span class="error-text">{{ $message }}</span> @enderror
                 </div>
+                <div class="form-group col-span-2">
+                    <label for="role">Role</label>
+                    <select name="role" id="role" required>
+                        <option value="">-- Pilih Role --</option>
+                        <option value="karyawan" {{ old('role') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
+                        <option value="team leader" {{ old('role') == 'team leader' ? 'selected' : '' }}>Team Leader</option>
+                    </select>
+                    @error('role') <span class="error-text">{{ $message }}</span> @enderror
+                </div>
                 <div class="form-group">
-                    <label for="password">Password Baru (Opsional)</label>
-                    <input type="password" name="password" id="password">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" required>
                     @error('password') <span class="error-text">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
-                    <label for="password_confirmation">Konfirmasi Password Baru</label>
-                    <input type="password" name="password_confirmation" id="password_confirmation">
+                    <label for="password_confirmation">Konfirmasi Password</label>
+                    <input type="password" name="password_confirmation" id="password_confirmation" required>
                 </div>
             </div>
-            
+
             <div class="form-footer">
-                <a href="{{ route('admin.karyawan.index') }}" class="btn btn-secondary">Batal</a>
-                <button type="submit" class="btn btn-red">Update Karyawan</button>
+                <a href="{{ route('admin.kelolauser.index') }}" class="btn btn-secondary">Batal</a>
+                <button type="submit" class="btn btn-red">Simpan User</button>
             </div>
         </form>
     </div>

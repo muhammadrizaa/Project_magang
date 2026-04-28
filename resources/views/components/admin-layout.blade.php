@@ -40,8 +40,8 @@
         </div>
         
         <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"><i class="fa-solid fa-tachometer-alt"></i> Dashboard</a>
-        <a href="{{ route('admin.karyawan.index') }}" class="{{ request()->routeIs('admin.karyawan.*') ? 'active' : '' }}"><i class="fa-solid fa-users"></i> Kelola Karyawan</a>
-        <a href="{{ route('admin.pangwas.index') }}" class="{{ request()->routeIs('admin.pangwas.*') ? 'active' : '' }}"><i class="fa-solid fa-user-tie"></i> Kelola Waspang</a>
+        <a href="{{ route('admin.kelolauser.index') }}" class="{{ request()->routeIs('admin.kelolauser.*') ? 'active' : '' }}"><i class="fa-solid fa-users"></i> Kelola User</a>
+        <a href="{{ route('admin.waspang.index') }}" class="{{ request()->routeIs('admin.waspang.*') ? 'active' : '' }}"><i class="fa-solid fa-user-tie"></i> Kelola Waspang</a>
         <a href="{{ route('admin.tematik.index') }}" class="{{ request()->routeIs('admin.tematik.*') ? 'active' : '' }}"><i class="fa-solid fa-tags"></i> Kelola Tematik</a>
         <a href="{{ route('admin.po.index') }}" class="{{ request()->routeIs('admin.po.*') ? 'active' : '' }}"><i class="fa-solid fa-money-check-dollar"></i> Kelola Purchase Order</a>
         <a href="{{ route('admin.evidence.index') }}" class="{{ request()->routeIs('admin.evidence.*') ? 'active' : '' }}"><i class="fa-solid fa-folder-open"></i> Kelola Evidence</a>
